@@ -1,0 +1,44 @@
+server:
+  port: ${SERVER_PORT:8081}
+
+spring:
+  application:
+    name: risk-engine
+  
+  data:
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb+srv://charan:charan825@myatlasclusteredu.eqstcqn.mongodb.net/?appName\=myAtlasClusterEDU}
+      auto-index-creation: true
+      database: gig-shield
+  
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: risk-engine
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+
+risk:
+  base-premium: 20.00
+  min-premium: 15.00
+  max-premium: 50.00
+  default-coverage: 800.00
+  
+  thresholds:
+    rainfall-high: 50.0     # mm per hour
+    aqi-hazardous: 300      # AQI index
+    temperature-high: 42    # Celsius
+    temperature-low: 5      # Celsius
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+logging:
+  level:
+    com.gigshield: DEBUG

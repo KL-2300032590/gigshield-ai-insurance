@@ -1,0 +1,45 @@
+server:
+  port: ${SERVER_PORT:8085}
+
+spring:
+  application:
+    name: payout-service
+  
+  data:
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb+srv://charan:charan825@myatlasclusteredu.eqstcqn.mongodb.net/?appName\=myAtlasClusterEDU}
+      auto-index-creation: true
+      database: gig-shield
+  
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: payout-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.gigshield.common.events
+
+payment:
+  razorpay:
+    key-id: ${RAZORPAY_KEY_ID:rzp_test_demo}
+    key-secret: ${RAZORPAY_KEY_SECRET:demo_secret}
+    base-url: https://api.razorpay.com/v1
+  
+  retry:
+    max-attempts: 3
+    delay-ms: 5000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+logging:
+  level:
+    com.gigshield: DEBUG

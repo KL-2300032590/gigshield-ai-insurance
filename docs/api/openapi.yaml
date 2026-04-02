@@ -1,0 +1,525 @@
+openapi: 3.0.3
+info:
+  title: GigShield AI Insurance API
+  description: |
+    API for GigShield - an AI-powered parametric insurance platform for gig delivery workers.
+    
+    ## Authentication
+    All authenticated endpoints require a Bearer token in the Authorization header:
+    ```
+    Authorization: Bearer <access_token>
+    ```
+    
+    ## Error Handling
+    All errors follow a standard format with `error`, `message`, and `path` fields.
+  version: 1.0.0
+  contact:
+    name: GigShield Team
+
+servers:
+  - url: http://localhost:8080/api
+    description: Local development server
+
+tags:
+  - name: Authentication
+    description: User authentication and token management
+  - name: Workers
+    description: Worker profile management
+  - name: Policies
+    description: Insurance policy operations
+  - name: Claims
+    description: Claim tracking
+  - name: Payouts
+    description: Payout tracking
+
+paths:
+  /auth/register:
+    post:
+      tags: [Authentication]
+      summary: Register a new worker
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkerRegistrationRequest'
+            example:
+              name: "Rahul Kumar"
+              email: "rahul@example.com"
+              phone: "9876543210"
+              password: "securePassword123"
+              latitude: 19.076
+              longitude: 72.877
+              city: "Mumbai"
+              platform: "SWIGGY"
+      responses:
+        '201':
+          description: Worker registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Validation error or email/phone already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: Login with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+            example:
+              email: "rahul@example.com"
+              password: "securePassword123"
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /auth/refresh:
+    post:
+      tags: [Authentication]
+      summary: Refresh access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+
+  /workers/me:
+    get:
+      tags: [Workers]
+      summary: Get current worker profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Worker profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkerResponse'
+        '401':
+          description: Unauthorized
+
+    put:
+      tags: [Workers]
+      summary: Update worker profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                phone:
+                  type: string
+                latitude:
+                  type: number
+                longitude:
+                  type: number
+                city:
+                  type: string
+      responses:
+        '200':
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkerResponse'
+
+  /policies:
+    get:
+      tags: [Policies]
+      summary: List all policies for current worker
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of policies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyResponse'
+
+  /policies/active:
+    get:
+      tags: [Policies]
+      summary: Get active policy for current worker
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Active policy or null
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyResponse'
+        '404':
+          description: No active policy found
+
+  /policies/premium:
+    get:
+      tags: [Policies]
+      summary: Calculate premium for current worker
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Premium calculation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RiskPremiumResponse'
+              example:
+                workerId: "worker123"
+                riskScore: 0.65
+                premium: 35.00
+                coverageLimit: 800.00
+                validUntil: "2024-01-15T10:30:00Z"
+                factors:
+                  rainfallRisk: 0.7
+                  aqiRisk: 0.5
+                  floodRisk: 0.6
+                  temperatureRisk: 0.3
+                  seasonalFactor: 1.2
+
+  /policies/purchase:
+    post:
+      tags: [Policies]
+      summary: Purchase a new weekly policy
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyPurchaseRequest'
+            example:
+              paymentMethod: "UPI"
+              autoRenew: true
+      responses:
+        '201':
+          description: Policy purchased
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyResponse'
+        '400':
+          description: Active policy already exists
+
+  /claims:
+    get:
+      tags: [Claims]
+      summary: List all claims for current worker
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [PENDING, APPROVED, REJECTED, PAID]
+      responses:
+        '200':
+          description: List of claims
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClaimResponse'
+
+  /claims/{id}:
+    get:
+      tags: [Claims]
+      summary: Get claim details
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Claim details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimResponse'
+        '404':
+          description: Claim not found
+
+  /payouts:
+    get:
+      tags: [Payouts]
+      summary: List all payouts for current worker
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of payouts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PayoutResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    WorkerRegistrationRequest:
+      type: object
+      required: [name, email, phone, password, latitude, longitude, city, platform]
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          pattern: '^[0-9]{10}$'
+        password:
+          type: string
+          minLength: 8
+        latitude:
+          type: number
+          minimum: -90
+          maximum: 90
+        longitude:
+          type: number
+          minimum: -180
+          maximum: 180
+        city:
+          type: string
+        platform:
+          type: string
+          enum: [SWIGGY, ZOMATO, DUNZO, OTHER]
+
+    AuthRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    AuthResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        expiresIn:
+          type: integer
+        worker:
+          $ref: '#/components/schemas/WorkerResponse'
+
+    WorkerResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        location:
+          type: object
+          properties:
+            latitude:
+              type: number
+            longitude:
+              type: number
+            city:
+              type: string
+        platform:
+          type: string
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE, SUSPENDED]
+        createdAt:
+          type: string
+          format: date-time
+
+    PolicyPurchaseRequest:
+      type: object
+      properties:
+        paymentMethod:
+          type: string
+          enum: [UPI, WALLET, CARD]
+        autoRenew:
+          type: boolean
+          default: false
+
+    PolicyResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        workerId:
+          type: string
+        premium:
+          type: number
+        coverageLimit:
+          type: number
+        status:
+          type: string
+          enum: [ACTIVE, EXPIRED, CANCELLED, CLAIMED]
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        city:
+          type: string
+        riskScore:
+          type: number
+        autoRenew:
+          type: boolean
+
+    RiskPremiumResponse:
+      type: object
+      properties:
+        workerId:
+          type: string
+        riskScore:
+          type: number
+          minimum: 0
+          maximum: 1
+        premium:
+          type: number
+        coverageLimit:
+          type: number
+        validUntil:
+          type: string
+          format: date-time
+        factors:
+          type: object
+          properties:
+            rainfallRisk:
+              type: number
+            aqiRisk:
+              type: number
+            floodRisk:
+              type: number
+            temperatureRisk:
+              type: number
+            seasonalFactor:
+              type: number
+
+    ClaimResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        policyId:
+          type: string
+        workerId:
+          type: string
+        triggerType:
+          type: string
+          enum: [HEAVY_RAIN, FLOOD, AIR_POLLUTION, EXTREME_HEAT, EXTREME_COLD]
+        measuredValue:
+          type: number
+        threshold:
+          type: number
+        amount:
+          type: number
+        status:
+          type: string
+          enum: [PENDING, VALIDATING, APPROVED, REJECTED, PAID]
+        triggeredAt:
+          type: string
+          format: date-time
+        processedAt:
+          type: string
+          format: date-time
+
+    PayoutResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        claimId:
+          type: string
+        workerId:
+          type: string
+        amount:
+          type: number
+        status:
+          type: string
+          enum: [PENDING, PROCESSING, SUCCESS, FAILED]
+        transactionId:
+          type: string
+        initiatedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+
+    ApiError:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        path:
+          type: string
+        timestamp:
+          type: string
+          format: date-time

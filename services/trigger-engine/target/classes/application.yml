@@ -1,0 +1,61 @@
+server:
+  port: ${SERVER_PORT:8082}
+
+spring:
+  application:
+    name: trigger-engine
+  
+  data:
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb+srv://charan:charan825@myatlasclusteredu.eqstcqn.mongodb.net/?appName\=myAtlasClusterEDU}
+      auto-index-creation: true
+      database: gig-shield
+  
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: trigger-engine
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+
+external-api:
+  weather:
+    base-url: ${WEATHER_API_URL:https://api.openweathermap.org/data/2.5}
+    api-key: ${WEATHER_API_KEY:98d93f3bace0459cf1b892e5d5c6b805}
+  aqi:
+    base-url: ${AQI_API_URL:https://api.waqi.info}
+    api-key: ${AQI_API_KEY:a0dbb5e806dcaee39be054c7555fcfd5a7860f54}
+
+trigger:
+  thresholds:
+    rainfall-mm: 50.0
+    aqi-hazardous: 300
+    temperature-high-celsius: 42
+    temperature-low-celsius: 5
+    flood-level: 1
+  
+  monitoring:
+    interval-seconds: 300
+    cities:
+      - Mumbai
+      - Delhi
+      - Bangalore
+      - Chennai
+      - Kolkata
+      - Hyderabad
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+logging:
+  level:
+    com.gigshield: DEBUG
