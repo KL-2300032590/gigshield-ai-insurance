@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import { WorkerResponse, PolicyResponse, ClaimResponse } from './api'
 
 interface AuthState {
@@ -7,8 +7,10 @@ interface AuthState {
   refreshToken: string | null
   worker: WorkerResponse | null
   isAuthenticated: boolean
+  _hasHydrated: boolean
   setAuth: (accessToken: string, refreshToken: string, worker: WorkerResponse) => void
   logout: () => void
+  setHasHydrated: (state: boolean) => void
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -18,13 +20,40 @@ export const useAuthStore = create<AuthState>()(
       refreshToken: null,
       worker: null,
       isAuthenticated: false,
-      setAuth: (accessToken, refreshToken, worker) => 
-        set({ accessToken, refreshToken, worker, isAuthenticated: true }),
-      logout: () => 
-        set({ accessToken: null, refreshToken: null, worker: null, isAuthenticated: false }),
+      _hasHydrated: false,
+      setAuth: (accessToken, refreshToken, worker) => {
+        // Also update localStorage directly for axios interceptor
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('accessToken', accessToken)
+          localStorage.setItem('refreshToken', refreshToken)
+        }
+        set({ accessToken, refreshToken, worker, isAuthenticated: true })
+      },
+      logout: () => {
+        // Clear localStorage
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('accessToken')
+          localStorage.removeItem('refreshToken')
+        }
+        set({ accessToken: null, refreshToken: null, worker: null, isAuthenticated: false })
+      },
+      setHasHydrated: (state) => set({ _hasHydrated: state }),
     }),
     {
       name: 'auth-storage',
+      storage: createJSONStorage(() => localStorage),
+      onRehydrateStorage: () => (state) => {
+        // Sync localStorage with store on rehydration
+        if (state && typeof window !== 'undefined') {
+          if (state.accessToken) {
+            localStorage.setItem('accessToken', state.accessToken)
+          }
+          if (state.refreshToken) {
+            localStorage.setItem('refreshToken', state.refreshToken)
+          }
+        }
+        state?.setHasHydrated(true)
+      },
     }
   )
 )

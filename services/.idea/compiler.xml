@@ -24,10 +24,20 @@
         <module name="trigger-engine" />
         <module name="gigshield-common" />
       </profile>
+      <profile name="Annotation profile for admin-simulator" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.32/lombok-1.18.32.jar" />
+        </processorPath>
+        <module name="admin-simulator" />
+      </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="admin-simulator" options="-parameters" />
       <module name="api-gateway" options="-parameters" />
       <module name="claim-service" options="-parameters" />
       <module name="fraud-detection" options="-parameters" />

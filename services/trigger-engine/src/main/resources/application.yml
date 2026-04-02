@@ -7,9 +7,8 @@ spring:
   
   data:
     mongodb:
-      uri: ${SPRING_DATA_MONGODB_URI:mongodb+srv://charan:charan825@myatlasclusteredu.eqstcqn.mongodb.net/?appName\=myAtlasClusterEDU}
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/gigshield}
       auto-index-creation: true
-      database: gig-shield
   
   kafka:
     bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}

@@ -15,11 +15,14 @@ import Link from 'next/link'
 
 export default function DashboardPage() {
   const router = useRouter()
-  const { worker, isAuthenticated } = useAuthStore()
+  const { worker, isAuthenticated, _hasHydrated } = useAuthStore()
   const { activePolicy, claims, setActivePolicy, setClaims, isLoading, setLoading } = useDashboardStore()
   const [error, setError] = useState('')
 
   useEffect(() => {
+    // Wait for hydration before checking auth
+    if (!_hasHydrated) return
+    
     if (!isAuthenticated) {
       router.push('/login')
       return
@@ -49,7 +52,18 @@ export default function DashboardPage() {
     }
 
     fetchData()
-  }, [isAuthenticated, worker])
+  }, [isAuthenticated, worker, _hasHydrated])
+
+  // Show loading while hydrating or not authenticated
+  if (!_hasHydrated) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
+        </div>
+      </DashboardLayout>
+    )
+  }
 
   if (!isAuthenticated) return null
 

@@ -13,11 +13,14 @@ import { formatCurrency, formatDate, formatDateTime, getTriggerLabel, getTrigger
 
 export default function ClaimsPage() {
   const router = useRouter()
-  const { worker, isAuthenticated } = useAuthStore()
+  const { worker, isAuthenticated, _hasHydrated } = useAuthStore()
   const [claims, setClaims] = useState<ClaimResponse[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // Wait for hydration before checking auth
+    if (!_hasHydrated) return
+    
     if (!isAuthenticated) {
       router.push('/login')
       return
@@ -37,7 +40,18 @@ export default function ClaimsPage() {
     }
 
     fetchClaims()
-  }, [isAuthenticated, worker])
+  }, [isAuthenticated, worker, _hasHydrated])
+
+  // Show loading while hydrating
+  if (!_hasHydrated) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
+        </div>
+      </DashboardLayout>
+    )
+  }
 
   if (!isAuthenticated) return null
 

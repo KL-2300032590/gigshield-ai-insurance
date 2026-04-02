@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { Sidebar } from "@/components/Sidebar";
 
@@ -13,8 +15,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased">
-      <body className="min-h-full flex bg-zinc-950">
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}>
+      <body className="min-h-full flex bg-zinc-950 font-sans">
         <Sidebar />
         <main className="flex-1 p-6 overflow-auto">{children}</main>
       </body>

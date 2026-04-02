@@ -35,7 +35,7 @@ public class EnvironmentMonitoringService {
     @Value("${trigger.thresholds.temperature-low-celsius:5}")
     private double lowTempThreshold;
     
-    @Value("${trigger.monitoring.cities}")
+    @Value("${trigger.monitoring.cities:Mumbai,Delhi,Bangalore,Chennai,Kolkata,Hyderabad}")
     private List<String> monitoredCities;
     
     @Scheduled(fixedRateString = "${trigger.monitoring.interval-seconds:300}000")
