@@ -324,6 +324,19 @@ Uses anomaly detection to identify suspicious claims such as:
 | fraud-detection | 8083 | Claim validation, anomaly detection |
 | claim-service | 8084 | Automated claim processing |
 | payout-service | 8085 | Payment gateway integration |
+| admin-simulator | 8091 | Weather simulation for demos (NEW) |
+
+### Admin Dashboard (NEW)
+
+| Route | Port | Description |
+|-------|------|-------------|
+| / | 3000 | Service health & statistics overview |
+| /simulation | 3000 | Weather event simulator |
+| /claims | 3000 | Claims management table |
+| /policies | 3000 | Policy analytics |
+| /workers | 3000 | Worker management |
+| /events | 3000 | Real-time Kafka events |
+| /logs | 3000 | System log aggregation |
 
 ### Kafka Topics
 
@@ -371,11 +384,15 @@ gigshield-ai-insurance/
 │   ├── trigger-engine/      # Environmental Monitoring
 │   ├── fraud-detection/     # Claim Validation
 │   ├── claim-service/       # Claim Processing
-│   └── payout-service/      # Payment Integration
-├── frontend/                # Next.js Web Application
+│   ├── payout-service/      # Payment Integration
+│   ├── admin-simulator/     # Weather Simulation (NEW)
+│   └── build-multiarch.sh   # Multi-arch Docker builds
+├── admin-dashboard/         # Next.js Admin Dashboard (NEW)
+├── frontend/                # Next.js Worker Application
 ├── architecture/            # System design diagrams
 ├── docs/                    # Documentation
 ├── prototype/               # Original prototype specs
+├── AI-README.md             # AI Model Context Documentation
 └── docker-compose.yml       # Full stack orchestration
 ```
 

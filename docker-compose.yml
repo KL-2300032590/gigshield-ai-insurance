@@ -107,6 +107,7 @@ services:
     build:
       context: ./services
       dockerfile: api-gateway/Dockerfile
+    platform: linux/amd64  # Explicit platform for multi-arch support
     container_name: gigshield-api-gateway
     ports:
       - "8080:8080"
@@ -135,6 +136,7 @@ services:
     build:
       context: ./services
       dockerfile: risk-engine/Dockerfile
+    platform: linux/amd64  # Explicit platform for multi-arch support
     container_name: gigshield-risk-engine
     ports:
       - "8081:8081"
@@ -155,6 +157,7 @@ services:
     build:
       context: ./services
       dockerfile: trigger-engine/Dockerfile
+    platform: linux/amd64  # Explicit platform for multi-arch support
     container_name: gigshield-trigger-engine
     ports:
       - "8082:8082"
@@ -177,6 +180,7 @@ services:
     build:
       context: ./services
       dockerfile: fraud-detection/Dockerfile
+    platform: linux/amd64  # Explicit platform for multi-arch support
     container_name: gigshield-fraud-detection
     ports:
       - "8083:8083"
@@ -197,6 +201,7 @@ services:
     build:
       context: ./services
       dockerfile: claim-service/Dockerfile
+    platform: linux/amd64  # Explicit platform for multi-arch support
     container_name: gigshield-claim-service
     ports:
       - "8084:8084"
@@ -220,6 +225,7 @@ services:
     build:
       context: ./services
       dockerfile: payout-service/Dockerfile
+    platform: linux/amd64  # Explicit platform for multi-arch support
     container_name: gigshield-payout-service
     ports:
       - "8085:8085"
@@ -237,11 +243,33 @@ services:
     networks:
       - gigshield-network
 
+  # Admin Simulator Service
+  admin-simulator:
+    build:
+      context: ./services
+      dockerfile: admin-simulator/Dockerfile
+    platform: linux/amd64  # Explicit platform for multi-arch support
+    container_name: gigshield-admin-simulator
+    ports:
+      - "8091:8091"
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://gigshield:gigshield123@mongodb:27017/gigshield?authSource=admin
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SERVER_PORT: 8091
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - gigshield-network
+
   # Frontend
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    platform: linux/amd64  # Explicit platform for multi-arch support
     container_name: gigshield-frontend
     ports:
       - "3000:3000"
