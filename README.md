@@ -338,6 +338,18 @@ Uses anomaly detection to identify suspicious claims such as:
 | /events | 3000 | Real-time Kafka events |
 | /logs | 3000 | System log aggregation |
 
+### Admin Dashboard Backend Connectivity
+
+The admin dashboard now runs fully connected to backend APIs via `admin-simulator` (default `:8091`) and no longer depends on UI mock data.
+
+Set in `admin-dashboard/.env.local`:
+
+```
+NEXT_PUBLIC_API_URL=http://localhost:8091
+NEXT_PUBLIC_SIMULATOR_URL=http://localhost:8091
+```
+
+
 ### Kafka Topics
 
 | Topic | Publisher | Consumers |
@@ -412,7 +424,7 @@ JWT_SECRET=your-secret-key
 
 **Frontend:**
 ```
-NEXT_PUBLIC_API_URL=http://localhost:8080/api
+NEXT_PUBLIC_API_URL=http://localhost:8080
 ```
 
 ### API Keys (Optional)

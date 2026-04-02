@@ -115,7 +115,7 @@ export default function LogsPage() {
           onChange={(e) => setFilter(prev => ({ ...prev, search: e.target.value }))}
           className="max-w-xs bg-zinc-900 border-zinc-800 text-white"
         />
-        <Select value={filter.level} onValueChange={(v) => setFilter(prev => ({ ...prev, level: v }))}>
+        <Select value={filter.level} onValueChange={(v) => v && setFilter(prev => ({ ...prev, level: v }))}>
           <SelectTrigger className="w-32 bg-zinc-900 border-zinc-800 text-white"><SelectValue placeholder="Level" /></SelectTrigger>
           <SelectContent className="bg-zinc-800 border-zinc-700">
             <SelectItem value="all" className="text-white">All Levels</SelectItem>
@@ -125,7 +125,7 @@ export default function LogsPage() {
             <SelectItem value="DEBUG" className="text-white">DEBUG</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={filter.service} onValueChange={(v) => setFilter(prev => ({ ...prev, service: v }))}>
+        <Select value={filter.service} onValueChange={(v) => v && setFilter(prev => ({ ...prev, service: v }))}>
           <SelectTrigger className="w-44 bg-zinc-900 border-zinc-800 text-white"><SelectValue placeholder="Service" /></SelectTrigger>
           <SelectContent className="bg-zinc-800 border-zinc-700">
             <SelectItem value="all" className="text-white">All Services</SelectItem>

@@ -138,7 +138,7 @@ export default function ClaimsPage() {
           onChange={(e) => setSearch(e.target.value)}
           className="max-w-xs bg-zinc-900 border-zinc-800 text-white"
         />
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select value={statusFilter} onValueChange={(v) => v && setStatusFilter(v)}>
           <SelectTrigger className="w-40 bg-zinc-900 border-zinc-800 text-white"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent className="bg-zinc-800 border-zinc-700">
             <SelectItem value="all" className="text-white">All Status</SelectItem>
@@ -149,7 +149,7 @@ export default function ClaimsPage() {
             <SelectItem value="REJECTED" className="text-white">Rejected</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={cityFilter} onValueChange={setCityFilter}>
+        <Select value={cityFilter} onValueChange={(v) => v && setCityFilter(v)}>
           <SelectTrigger className="w-44 bg-zinc-900 border-zinc-800 text-white"><SelectValue placeholder="City" /></SelectTrigger>
           <SelectContent className="bg-zinc-800 border-zinc-700">
             <SelectItem value="all" className="text-white">All Cities</SelectItem>
