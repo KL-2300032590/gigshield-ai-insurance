@@ -27,6 +27,7 @@
         <module>fraud-detection</module>
         <module>claim-service</module>
         <module>payout-service</module>
+        <module>admin-simulator</module>
     </modules>
 
     <properties>

@@ -77,6 +77,8 @@ All 49 tests should pass:
 
 ## Docker Build
 
+### Single Architecture (Current Platform)
+
 ```bash
 # Build all service containers
 docker-compose build
@@ -90,6 +92,38 @@ docker-compose up
 # Start in detached mode
 docker-compose up -d
 ```
+
+### Multi-Architecture Build (AMD64 + ARM64)
+
+Build Docker images for both Intel/AMD (linux/amd64) and ARM (linux/arm64) architectures:
+
+```bash
+cd services
+
+# Build all services for multiple platforms
+./build-multiarch.sh
+
+# Build and push to Docker registry
+./build-multiarch.sh --push
+
+# Build specific service only
+./build-multiarch.sh --service api-gateway
+```
+
+**Supported Platforms:**
+- `linux/amd64` - Intel/AMD x86_64 (Windows, Linux servers, AWS EC2)
+- `linux/arm64` - ARM 64-bit (Apple Silicon M1/M2/M3, AWS Graviton)
+
+**Benefits:**
+- Deploy on any cloud provider (AWS, Azure, GCP)
+- Run on Windows/Linux (Intel) and Mac (Apple Silicon)
+- Consistent experience across platforms
+
+**Note:** Multi-arch builds require Docker Buildx. The script will automatically:
+1. Create a multi-platform builder if not exists
+2. Build Maven packages with Java 21
+3. Build Docker images for both architectures
+4. Optionally push to registry with `--push` flag
 
 ## Troubleshooting
 

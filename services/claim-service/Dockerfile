@@ -10,6 +10,7 @@ COPY trigger-engine ./trigger-engine
 COPY fraud-detection ./fraud-detection
 COPY claim-service ./claim-service
 COPY payout-service ./payout-service
+COPY admin-simulator ./admin-simulator
 
 # Install parent POM and build common module
 RUN mvn -N install && mvn -pl common clean install -DskipTests

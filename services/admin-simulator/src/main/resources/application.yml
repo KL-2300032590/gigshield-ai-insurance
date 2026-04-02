@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: admin-simulator
+
+  # MongoDB Configuration
+  data:
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://gigshield:gigshield123@localhost:27017/gigshield?authSource=admin}
+
+  # Kafka Configuration
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+        spring.json.type.mapping: >
+          environment.disruption:com.gigshield.common.events.EnvironmentDisruptionEvent
+
+# Server Configuration
+server:
+  port: ${SERVER_PORT:8091}
+
+# Logging
+logging:
+  level:
+    com.gigshield.simulator: DEBUG
+    org.springframework.kafka: INFO
+    org.mongodb.driver: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
