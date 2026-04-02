@@ -61,10 +61,9 @@ export default function WorkersPage() {
   const stats = useMemo(() => {
     const total = workers.length;
     const active = workers.filter(w => w.status === 'ACTIVE').length;
-    const withPolicies = Math.round(active * 0.75);
     const monthAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
     const newThisMonth = workers.filter(w => new Date(w.registeredAt).getTime() >= monthAgo).length;
-    return { total, active, withPolicies, newThisMonth };
+    return { total, active, newThisMonth };
   }, [workers]);
 
   return (
@@ -80,10 +79,9 @@ export default function WorkersPage() {
         </Card>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-zinc-900 border-zinc-800"><CardContent className="pt-4"><p className="text-zinc-400 text-sm">Total Workers</p><p className="text-2xl font-bold text-white">{stats.total.toLocaleString()}</p></CardContent></Card>
         <Card className="bg-zinc-900 border-zinc-800"><CardContent className="pt-4"><p className="text-zinc-400 text-sm">Active</p><p className="text-2xl font-bold text-green-400">{stats.active.toLocaleString()}</p></CardContent></Card>
-        <Card className="bg-zinc-900 border-zinc-800"><CardContent className="pt-4"><p className="text-zinc-400 text-sm">With Policies</p><p className="text-2xl font-bold text-blue-400">{stats.withPolicies.toLocaleString()}</p></CardContent></Card>
         <Card className="bg-zinc-900 border-zinc-800"><CardContent className="pt-4"><p className="text-zinc-400 text-sm">New This Month</p><p className="text-2xl font-bold text-purple-400">{stats.newThisMonth.toLocaleString()}</p></CardContent></Card>
       </div>
 

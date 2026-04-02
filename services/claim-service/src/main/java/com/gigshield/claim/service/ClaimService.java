@@ -8,6 +8,7 @@ import com.gigshield.claim.repository.ClaimRepository;
 import com.gigshield.claim.repository.PolicyRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,10 +23,15 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ClaimService {
+
+    private static final double EARTH_RADIUS_KM = 6371.0;
     
     private final ClaimRepository claimRepository;
     private final PolicyRepository policyRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
+
+    @Value("${claim.location.validation-radius-km:50}")
+    private double locationValidationRadiusKm;
     
     @Transactional
     public void processDisruption(EnvironmentDisruptionEvent event) {
@@ -42,6 +48,11 @@ public class ClaimService {
                 activePolicies.size(), event.getCity());
         
         for (Policy policy : activePolicies) {
+            if (!isPolicyWithinDisruptionRadius(policy, event)) {
+                log.debug("Skipping policy {} due to location mismatch for disruption in {}",
+                        policy.getId(), event.getCity());
+                continue;
+            }
             createClaimForPolicy(policy, event);
         }
     }
@@ -63,6 +74,8 @@ public class ClaimService {
                         .value(event.getMeasuredValue())
                         .threshold(event.getThreshold())
                         .location(event.getCity())
+                        .latitude(event.getLatitude())
+                        .longitude(event.getLongitude())
                         .source(event.getSource())
                         .measuredAt(event.getMeasuredAt())
                         .build())
@@ -158,6 +171,8 @@ public class ClaimService {
                 .measuredValue(triggerEvent.getMeasuredValue())
                 .threshold(triggerEvent.getThreshold())
                 .city(triggerEvent.getCity())
+                .disruptionLatitude(triggerEvent.getLatitude())
+                .disruptionLongitude(triggerEvent.getLongitude())
                 .amount(claim.getAmount())
                 .build();
         
@@ -177,5 +192,30 @@ public class ClaimService {
         
         kafkaTemplate.send(KafkaTopics.CLAIM_APPROVED, claim.getId(), event);
         log.info("Published ClaimApprovedEvent for claim: {}", claim.getId());
+    }
+
+    private boolean isPolicyWithinDisruptionRadius(Policy policy, EnvironmentDisruptionEvent event) {
+        if (policy.getLatitude() == null || policy.getLongitude() == null) {
+            log.warn("Skipping policy {} because coordinates are missing", policy.getId());
+            return false;
+        }
+        return calculateDistanceKm(
+                policy.getLatitude(),
+                policy.getLongitude(),
+                event.getLatitude(),
+                event.getLongitude()
+        ) <= locationValidationRadiusKm;
+    }
+
+    private double calculateDistanceKm(double lat1, double lon1, double lat2, double lon2) {
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return EARTH_RADIUS_KM * c;
     }
 }

@@ -52,6 +52,8 @@ public class Claim {
         private double value;           // Actual measured value (rainfall mm, AQI, temp)
         private double threshold;       // Threshold that was exceeded
         private String location;        // City/area where measured
+        private Double latitude;        // Disruption latitude
+        private Double longitude;       // Disruption longitude
         private String source;          // Data source (API name)
         private Instant measuredAt;     // When the measurement was taken
     }

@@ -13,11 +13,22 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class EnvironmentMonitoringService {
+
+    private static final Map<String, double[]> CITY_COORDINATES = Map.of(
+            "Mumbai", new double[]{19.0760, 72.8777},
+            "Delhi", new double[]{28.7041, 77.1025},
+            "Bangalore", new double[]{12.9716, 77.5946},
+            "Hyderabad", new double[]{17.3850, 78.4867},
+            "Chennai", new double[]{13.0827, 80.2707},
+            "Kolkata", new double[]{22.5726, 88.3639},
+            "Pune", new double[]{18.5204, 73.8567}
+    );
     
     private final WeatherApiClient weatherApiClient;
     private final AqiApiClient aqiApiClient;
@@ -75,11 +86,12 @@ public class EnvironmentMonitoringService {
         if (weather.getRainfall() >= rainfallThreshold) {
             log.warn("TRIGGER: Heavy rainfall detected in {} - {}mm (threshold: {}mm)", 
                     city, weather.getRainfall(), rainfallThreshold);
+            double[] coordinates = getCoordinates(city);
             
             publishDisruptionEvent(
                     TriggerType.HEAVY_RAIN,
                     city,
-                    0, 0,
+                    coordinates[0], coordinates[1],
                     weather.getRainfall(),
                     rainfallThreshold,
                     "OpenWeatherMap"
@@ -88,6 +100,7 @@ public class EnvironmentMonitoringService {
     }
     
     private void checkTemperatureTrigger(String city, WeatherApiClient.WeatherData weather) {
+        double[] coordinates = getCoordinates(city);
         if (weather.getTemperature() >= highTempThreshold) {
             log.warn("TRIGGER: Extreme heat detected in {} - {}°C (threshold: {}°C)", 
                     city, weather.getTemperature(), highTempThreshold);
@@ -95,7 +108,7 @@ public class EnvironmentMonitoringService {
             publishDisruptionEvent(
                     TriggerType.EXTREME_HEAT,
                     city,
-                    0, 0,
+                    coordinates[0], coordinates[1],
                     weather.getTemperature(),
                     highTempThreshold,
                     "OpenWeatherMap"
@@ -107,7 +120,7 @@ public class EnvironmentMonitoringService {
             publishDisruptionEvent(
                     TriggerType.EXTREME_COLD,
                     city,
-                    0, 0,
+                    coordinates[0], coordinates[1],
                     weather.getTemperature(),
                     lowTempThreshold,
                     "OpenWeatherMap"
@@ -119,11 +132,12 @@ public class EnvironmentMonitoringService {
         if (aqi.getAqi() >= aqiThreshold) {
             log.warn("TRIGGER: Hazardous AQI detected in {} - {} (threshold: {})", 
                     city, aqi.getAqi(), aqiThreshold);
+            double[] coordinates = getCoordinates(city);
             
             publishDisruptionEvent(
                     TriggerType.AIR_POLLUTION,
                     city,
-                    0, 0,
+                    coordinates[0], coordinates[1],
                     aqi.getAqi(),
                     aqiThreshold,
                     "WAQI"
@@ -156,5 +170,14 @@ public class EnvironmentMonitoringService {
         if (ratio >= 1.5) return EnvironmentDisruptionEvent.Severity.HIGH;
         if (ratio >= 1.2) return EnvironmentDisruptionEvent.Severity.MEDIUM;
         return EnvironmentDisruptionEvent.Severity.LOW;
+    }
+
+    private double[] getCoordinates(String city) {
+        double[] coordinates = CITY_COORDINATES.get(city);
+        if (coordinates == null) {
+            log.warn("No configured coordinates found for city '{}'; using fallback coordinates (0.0, 0.0)", city);
+            return new double[]{0.0, 0.0};
+        }
+        return coordinates;
     }
 }

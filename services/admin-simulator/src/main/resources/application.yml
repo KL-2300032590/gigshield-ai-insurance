@@ -40,3 +40,13 @@ management:
   endpoint:
     health:
       show-details: always
+
+services:
+  health:
+    api-gateway-url: ${API_GATEWAY_URL:http://api-gateway:8080}
+    risk-engine-url: ${RISK_ENGINE_URL:http://risk-engine:8081}
+    trigger-engine-url: ${TRIGGER_ENGINE_URL:http://trigger-engine:8082}
+    fraud-detection-url: ${FRAUD_DETECTION_URL:http://fraud-detection:8083}
+    claim-service-url: ${CLAIM_SERVICE_URL:http://claim-service:8084}
+    payout-service-url: ${PAYOUT_SERVICE_URL:http://payout-service:8085}
+    admin-simulator-url: ${ADMIN_SIMULATOR_URL:http://admin-simulator:8091}

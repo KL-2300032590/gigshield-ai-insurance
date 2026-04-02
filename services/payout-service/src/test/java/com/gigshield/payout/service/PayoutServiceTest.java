@@ -1,9 +1,13 @@
 package com.gigshield.payout.service;
 
 import com.gigshield.common.events.ClaimApprovedEvent;
+import com.gigshield.common.model.Claim;
 import com.gigshield.common.model.Payout;
+import com.gigshield.common.model.Worker;
 import com.gigshield.payout.client.RazorpayClient;
+import com.gigshield.payout.repository.ClaimRepository;
 import com.gigshield.payout.repository.PayoutRepository;
+import com.gigshield.payout.repository.WorkerRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,9 +16,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.test.util.ReflectionTestUtils;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -33,6 +39,12 @@ class PayoutServiceTest {
     @Mock
     private KafkaTemplate<String, Object> kafkaTemplate;
 
+    @Mock
+    private ClaimRepository claimRepository;
+
+    @Mock
+    private WorkerRepository workerRepository;
+
     @InjectMocks
     private PayoutService payoutService;
 
@@ -46,6 +58,28 @@ class PayoutServiceTest {
                 .workerId("worker123")
                 .amount(new BigDecimal("800.00"))
                 .build();
+
+        ReflectionTestUtils.setField(payoutService, "locationValidationRadiusKm", 50.0);
+
+        Claim claim = Claim.builder()
+                .id("claim123")
+                .triggerData(Claim.TriggerData.builder()
+                        .latitude(19.076)
+                        .longitude(72.877)
+                        .location("Mumbai")
+                        .build())
+                .build();
+        when(claimRepository.findById("claim123")).thenReturn(Optional.of(claim));
+
+        Worker worker = Worker.builder()
+                .id("worker123")
+                .location(Worker.Location.builder()
+                        .latitude(19.076)
+                        .longitude(72.877)
+                        .city("Mumbai")
+                        .build())
+                .build();
+        when(workerRepository.findById("worker123")).thenReturn(Optional.of(worker));
     }
 
     @Test
