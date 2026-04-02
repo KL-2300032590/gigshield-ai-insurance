@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GigShield Admin Dashboard
 
-## Getting Started
+Professional operations dashboard for GigShield microservices with live backend connectivity via `admin-simulator`.
 
-First, run the development server:
+## Features
+
+- Live service health dashboard
+- Real-time simulation controls
+- Claims, workers, and policies operations views
+- Event stream and system logs monitoring
+- Metrics-driven overview cards
+
+## Prerequisites
+
+- Node.js 18+
+- npm 9+
+- Running backend services (at minimum `admin-simulator`)
+
+## Environment
+
+Create `/home/runner/work/gigshield-ai-insurance/gigshield-ai-insurance/admin-dashboard/.env.local`:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+NEXT_PUBLIC_API_URL=http://localhost:8091
+NEXT_PUBLIC_SIMULATOR_URL=http://localhost:8091
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+> For local integration, both dashboard API and simulator API are served from `admin-simulator` on port `8091`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Run locally
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+cd /home/runner/work/gigshield-ai-insurance/gigshield-ai-insurance/admin-dashboard
+npm ci
+npm run dev
+```
 
-## Learn More
+Open: http://localhost:3000
 
-To learn more about Next.js, take a look at the following resources:
+## Validation
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run lint
+npm run build
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Backend endpoints used by dashboard
 
-## Deploy on Vercel
+- `GET /api/admin/health`
+- `GET /api/admin/health/{serviceName}`
+- `GET /api/admin/metrics`
+- `GET /api/workers`
+- `GET /api/workers/{id}`
+- `GET /api/policies`
+- `GET /api/policies/{id}`
+- `GET /api/claims`
+- `GET /api/claims/{id}`
+- `GET /api/admin/events`
+- `GET /api/admin/events/stream`
+- `GET /api/admin/logs`
+- `POST /api/admin/simulate/weather`
+- `GET /api/admin/simulate/simulations`
+- `GET /api/admin/simulate/simulations/{id}`
+- `DELETE /api/admin/simulate/simulations/{id}`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## UX and design notes
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Uses a dark operational UI tuned for dense admin workflows
+- Typography and card hierarchy optimized for readability/scannability
+- Auto-refresh on health, metrics, logs, and event views for live observability

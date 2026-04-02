@@ -1,34 +1,10 @@
+'use client';
+
+import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { api, ServiceHealth } from '@/lib/api';
 
-/**
- * Service health card data
- */
-const services = [
-  { name: 'API Gateway', port: 8080, status: 'UP' as const, icon: '🌐' },
-  { name: 'Risk Engine', port: 8081, status: 'UP' as const, icon: '📊' },
-  { name: 'Trigger Engine', port: 8082, status: 'UP' as const, icon: '⚡' },
-  { name: 'Fraud Detection', port: 8083, status: 'UP' as const, icon: '🔍' },
-  { name: 'Claim Service', port: 8084, status: 'UP' as const, icon: '📋' },
-  { name: 'Payout Service', port: 8085, status: 'UP' as const, icon: '💰' },
-  { name: 'Admin Simulator', port: 8091, status: 'UP' as const, icon: '🎮' },
-];
-
-/**
- * Mock statistics data
- */
-const stats = {
-  activePolicies: 1247,
-  pendingClaims: 23,
-  approvedClaims: 156,
-  totalPayouts: 4520000,
-  activeWorkers: 3854,
-  todayEvents: 47,
-};
-
-/**
- * Status badge color mapping
- */
 function getStatusColor(status: string) {
   switch (status) {
     case 'UP':
@@ -42,93 +18,113 @@ function getStatusColor(status: string) {
   }
 }
 
-/**
- * Overview Dashboard Page
- * Displays service health status and key statistics
- */
+const serviceIconMap: Record<string, string> = {
+  'API Gateway': '🌐',
+  'Risk Engine': '📊',
+  'Trigger Engine': '⚡',
+  'Fraud Detection': '🔍',
+  'Claim Service': '📋',
+  'Payout Service': '💰',
+  'Admin Simulator': '🎮',
+};
+
 export default function OverviewPage() {
+  const [services, setServices] = useState<ServiceHealth[]>([]);
+  const [metrics, setMetrics] = useState<Record<string, number>>({});
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const load = async () => {
+      try {
+        const [health, currentMetrics] = await Promise.all([
+          api.health.getServicesHealth(),
+          api.metrics.get(),
+        ]);
+        if (!mounted) return;
+        setServices(health);
+        setMetrics(currentMetrics);
+      } catch (err) {
+        if (!mounted) return;
+        setError((err as Error).message);
+      }
+    };
+
+    load();
+    const interval = setInterval(load, 15000);
+
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  const stats = useMemo(() => ({
+    activePolicies: Number(metrics.activePolicies ?? 0),
+    pendingClaims: Number(metrics.pendingClaims ?? 0),
+    approvedClaims: Number(metrics.approvedClaims ?? 0),
+    totalPayouts: Number(metrics.totalPayouts ?? 0),
+    activeWorkers: Number(metrics.activeWorkers ?? 0),
+    todayEvents: Number(metrics.todayEvents ?? 0),
+  }), [metrics]);
+
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div>
         <h1 className="text-3xl font-bold text-white">Dashboard Overview</h1>
         <p className="text-zinc-400 mt-1">
-          Monitor service health and view key metrics
+          Monitor service health and live platform metrics
         </p>
       </div>
 
-      {/* Statistics Cards */}
+      {error && (
+        <Card className="bg-red-500/10 border-red-500/30">
+          <CardContent className="pt-4 text-red-300 text-sm">
+            Failed to load dashboard data: {error}
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <Card className="bg-zinc-900 border-zinc-800">
-          <CardHeader className="pb-2">
-            <CardDescription className="text-zinc-400">Active Policies</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-white">{stats.activePolicies.toLocaleString()}</p>
-          </CardContent>
+          <CardHeader className="pb-2"><CardDescription className="text-zinc-400">Active Policies</CardDescription></CardHeader>
+          <CardContent><p className="text-2xl font-bold text-white">{stats.activePolicies.toLocaleString()}</p></CardContent>
         </Card>
-
         <Card className="bg-zinc-900 border-zinc-800">
-          <CardHeader className="pb-2">
-            <CardDescription className="text-zinc-400">Pending Claims</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-yellow-400">{stats.pendingClaims}</p>
-          </CardContent>
+          <CardHeader className="pb-2"><CardDescription className="text-zinc-400">Pending Claims</CardDescription></CardHeader>
+          <CardContent><p className="text-2xl font-bold text-yellow-400">{stats.pendingClaims}</p></CardContent>
         </Card>
-
         <Card className="bg-zinc-900 border-zinc-800">
-          <CardHeader className="pb-2">
-            <CardDescription className="text-zinc-400">Approved Claims</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-green-400">{stats.approvedClaims}</p>
-          </CardContent>
+          <CardHeader className="pb-2"><CardDescription className="text-zinc-400">Approved Claims</CardDescription></CardHeader>
+          <CardContent><p className="text-2xl font-bold text-green-400">{stats.approvedClaims}</p></CardContent>
         </Card>
-
         <Card className="bg-zinc-900 border-zinc-800">
-          <CardHeader className="pb-2">
-            <CardDescription className="text-zinc-400">Total Payouts</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-blue-400">₹{(stats.totalPayouts / 100000).toFixed(1)}L</p>
-          </CardContent>
+          <CardHeader className="pb-2"><CardDescription className="text-zinc-400">Total Payouts</CardDescription></CardHeader>
+          <CardContent><p className="text-2xl font-bold text-blue-400">₹{(stats.totalPayouts / 100000).toFixed(1)}L</p></CardContent>
         </Card>
-
         <Card className="bg-zinc-900 border-zinc-800">
-          <CardHeader className="pb-2">
-            <CardDescription className="text-zinc-400">Active Workers</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-white">{stats.activeWorkers.toLocaleString()}</p>
-          </CardContent>
+          <CardHeader className="pb-2"><CardDescription className="text-zinc-400">Active Workers</CardDescription></CardHeader>
+          <CardContent><p className="text-2xl font-bold text-white">{stats.activeWorkers.toLocaleString()}</p></CardContent>
         </Card>
-
         <Card className="bg-zinc-900 border-zinc-800">
-          <CardHeader className="pb-2">
-            <CardDescription className="text-zinc-400">Today&apos;s Events</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-purple-400">{stats.todayEvents}</p>
-          </CardContent>
+          <CardHeader className="pb-2"><CardDescription className="text-zinc-400">Today&apos;s Events</CardDescription></CardHeader>
+          <CardContent><p className="text-2xl font-bold text-purple-400">{stats.todayEvents}</p></CardContent>
         </Card>
       </div>
 
-      {/* Service Health Grid */}
       <div>
         <h2 className="text-xl font-semibold text-white mb-4">Service Health</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {services.map((service) => (
-            <Card key={service.name} className="bg-zinc-900 border-zinc-800">
+            <Card key={`${service.name}-${service.port}`} className="bg-zinc-900 border-zinc-800">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-2xl">{service.icon}</span>
+                    <span className="text-2xl">{serviceIconMap[service.name] ?? '🧩'}</span>
                     <CardTitle className="text-white text-lg">{service.name}</CardTitle>
                   </div>
-                  <Badge className={getStatusColor(service.status)}>
-                    {service.status}
-                  </Badge>
+                  <Badge className={getStatusColor(service.status)}>{service.status}</Badge>
                 </div>
               </CardHeader>
               <CardContent>
@@ -138,7 +134,7 @@ export default function OverviewPage() {
                 </div>
                 <div className="flex items-center justify-between text-sm mt-1">
                   <span className="text-zinc-400">Response</span>
-                  <span className="text-green-400">&lt;50ms</span>
+                  <span className="text-green-400">{service.responseTime ? `${service.responseTime}ms` : 'n/a'}</span>
                 </div>
               </CardContent>
             </Card>
@@ -146,29 +142,25 @@ export default function OverviewPage() {
         </div>
       </div>
 
-      {/* Recent Activity */}
       <div>
         <h2 className="text-xl font-semibold text-white mb-4">Recent Activity</h2>
         <Card className="bg-zinc-900 border-zinc-800">
           <CardContent className="pt-4">
             <div className="space-y-3">
               {[
-                { time: '2m ago', event: 'Claim approved', detail: 'CLM-2024-1234 for ₹5,000', type: 'success' },
-                { time: '5m ago', event: 'Policy purchased', detail: 'POL-2024-5678 - Silver Plan', type: 'info' },
-                { time: '12m ago', event: 'Worker registered', detail: 'Amit Kumar - Mumbai', type: 'info' },
-                { time: '15m ago', event: 'Payout completed', detail: '₹8,500 to UPI account', type: 'success' },
-                { time: '23m ago', event: 'High AQI detected', detail: 'Delhi - AQI 245', type: 'warning' },
+                { event: 'Health sync complete', detail: `${services.length} services monitored`, type: 'success' },
+                { event: 'Claims processing', detail: `${stats.pendingClaims} claims pending validation`, type: 'info' },
+                { event: 'Policy portfolio', detail: `${stats.activePolicies} active policies running`, type: 'info' },
+                { event: 'Payout exposure', detail: `₹${stats.totalPayouts.toLocaleString()} approved/paid`, type: 'success' },
+                { event: 'Event stream', detail: `${stats.todayEvents} environment events in last 24h`, type: 'warning' },
               ].map((activity, i) => (
                 <div key={i} className="flex items-center gap-4 py-2 border-b border-zinc-800 last:border-0">
-                  <span className={`w-2 h-2 rounded-full ${
-                    activity.type === 'success' ? 'bg-green-500' :
-                    activity.type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'
-                  }`}></span>
+                  <span className={`w-2 h-2 rounded-full ${activity.type === 'success' ? 'bg-green-500' : activity.type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'}`} />
                   <div className="flex-1">
                     <p className="text-white text-sm">{activity.event}</p>
                     <p className="text-zinc-500 text-xs">{activity.detail}</p>
                   </div>
-                  <span className="text-zinc-500 text-xs">{activity.time}</span>
+                  <span className="text-zinc-500 text-xs">live</span>
                 </div>
               ))}
             </div>
