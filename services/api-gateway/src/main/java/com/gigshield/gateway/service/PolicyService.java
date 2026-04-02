@@ -6,8 +6,10 @@ import com.gigshield.common.dto.RiskPremiumResponse;
 import com.gigshield.common.events.KafkaTopics;
 import com.gigshield.common.events.PolicyPurchasedEvent;
 import com.gigshield.common.model.Policy;
+import com.gigshield.common.model.Worker;
 import com.gigshield.common.utils.DateUtils;
 import com.gigshield.gateway.repository.PolicyRepository;
+import com.gigshield.gateway.repository.WorkerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -29,6 +31,7 @@ public class PolicyService {
     private static final BigDecimal BASE_PREMIUM = new BigDecimal("20.00");
     
     private final PolicyRepository policyRepository;
+    private final WorkerRepository workerRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final RestTemplate restTemplate;
     
@@ -49,6 +52,9 @@ public class PolicyService {
         
         BigDecimal coverageLimit = request.getCoverageLimit() != null ? 
                 request.getCoverageLimit() : DEFAULT_COVERAGE_LIMIT;
+        Worker worker = workerRepository.findById(workerId)
+                .orElseThrow(() -> new IllegalArgumentException("Worker not found"));
+        Worker.Location workerLocation = worker.getLocation();
         
         // Create policy
         Policy policy = Policy.builder()
@@ -58,6 +64,9 @@ public class PolicyService {
                 .premium(riskResponse != null ? riskResponse.getPremium() : BASE_PREMIUM)
                 .coverageLimit(coverageLimit)
                 .riskScore(riskResponse != null ? riskResponse.getRiskScore() : 0.5)
+                .city(workerLocation != null ? workerLocation.getCity() : null)
+                .latitude(workerLocation != null ? workerLocation.getLatitude() : null)
+                .longitude(workerLocation != null ? workerLocation.getLongitude() : null)
                 .startDate(DateUtils.getWeekStartDate(weekNumber, year))
                 .endDate(DateUtils.getWeekEndDate(weekNumber, year))
                 .status(Policy.PolicyStatus.ACTIVE)

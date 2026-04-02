@@ -45,7 +45,7 @@ fraud:
   thresholds:
     fraud-score-max: 0.7
     duplicate-claim-hours: 24
-    location-radius-km: 50
+    location-radius-km: ${FRAUD_LOCATION_RADIUS_KM:50}
 
 management:
   endpoints:

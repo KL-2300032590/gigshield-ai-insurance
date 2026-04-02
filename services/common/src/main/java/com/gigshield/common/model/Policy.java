@@ -36,6 +36,9 @@ public class Policy {
     private BigDecimal premium;
     private BigDecimal coverageLimit;
     private double riskScore;
+    private String city;
+    private Double latitude;
+    private Double longitude;
     
     private LocalDate startDate;
     private LocalDate endDate;
