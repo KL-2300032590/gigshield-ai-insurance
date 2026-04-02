@@ -196,6 +196,7 @@ public class ClaimService {
 
     private boolean isPolicyWithinDisruptionRadius(Policy policy, EnvironmentDisruptionEvent event) {
         if (policy.getLatitude() == null || policy.getLongitude() == null) {
+            log.warn("Skipping policy {} because coordinates are missing", policy.getId());
             return false;
         }
         return calculateDistanceKm(

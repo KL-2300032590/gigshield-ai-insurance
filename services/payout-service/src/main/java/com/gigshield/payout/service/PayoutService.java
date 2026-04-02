@@ -163,12 +163,26 @@ public class PayoutService {
     private boolean isPayoutLocationValid(String claimId, String workerId) {
         Claim claim = claimRepository.findById(claimId).orElse(null);
         Worker worker = workerRepository.findById(workerId).orElse(null);
-        if (claim == null || claim.getTriggerData() == null || worker == null || worker.getLocation() == null) {
+        if (claim == null) {
+            log.warn("Payout location validation failed: claim {} not found", claimId);
+            return false;
+        }
+        if (claim.getTriggerData() == null) {
+            log.warn("Payout location validation failed: claim {} missing trigger data", claimId);
+            return false;
+        }
+        if (worker == null) {
+            log.warn("Payout location validation failed: worker {} not found", workerId);
+            return false;
+        }
+        if (worker.getLocation() == null) {
+            log.warn("Payout location validation failed: worker {} missing location", workerId);
             return false;
         }
         Double disruptionLat = claim.getTriggerData().getLatitude();
         Double disruptionLon = claim.getTriggerData().getLongitude();
         if (disruptionLat == null || disruptionLon == null) {
+            log.warn("Payout location validation failed: claim {} missing disruption coordinates", claimId);
             return false;
         }
 

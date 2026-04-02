@@ -12,7 +12,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,17 +20,15 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class EnvironmentMonitoringService {
 
-    private static final Map<String, double[]> CITY_COORDINATES = new HashMap<>();
-
-    static {
-        CITY_COORDINATES.put("Mumbai", new double[]{19.0760, 72.8777});
-        CITY_COORDINATES.put("Delhi", new double[]{28.7041, 77.1025});
-        CITY_COORDINATES.put("Bangalore", new double[]{12.9716, 77.5946});
-        CITY_COORDINATES.put("Hyderabad", new double[]{17.3850, 78.4867});
-        CITY_COORDINATES.put("Chennai", new double[]{13.0827, 80.2707});
-        CITY_COORDINATES.put("Kolkata", new double[]{22.5726, 88.3639});
-        CITY_COORDINATES.put("Pune", new double[]{18.5204, 73.8567});
-    }
+    private static final Map<String, double[]> CITY_COORDINATES = Map.of(
+            "Mumbai", new double[]{19.0760, 72.8777},
+            "Delhi", new double[]{28.7041, 77.1025},
+            "Bangalore", new double[]{12.9716, 77.5946},
+            "Hyderabad", new double[]{17.3850, 78.4867},
+            "Chennai", new double[]{13.0827, 80.2707},
+            "Kolkata", new double[]{22.5726, 88.3639},
+            "Pune", new double[]{18.5204, 73.8567}
+    );
     
     private final WeatherApiClient weatherApiClient;
     private final AqiApiClient aqiApiClient;
@@ -176,6 +173,11 @@ public class EnvironmentMonitoringService {
     }
 
     private double[] getCoordinates(String city) {
-        return CITY_COORDINATES.getOrDefault(city, new double[]{0.0, 0.0});
+        double[] coordinates = CITY_COORDINATES.get(city);
+        if (coordinates == null) {
+            log.warn("No configured coordinates found for city '{}'; using fallback coordinates (0.0, 0.0)", city);
+            return new double[]{0.0, 0.0};
+        }
+        return coordinates;
     }
 }

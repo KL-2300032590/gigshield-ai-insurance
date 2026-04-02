@@ -17,6 +17,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -24,6 +25,7 @@ import java.util.List;
 public class FraudDetectionService {
 
     private static final double EARTH_RADIUS_KM = 6371.0;
+    private static final double LOCATION_MISMATCH_PENALTY = 0.5;
     
     private final FraudCheckRepository fraudCheckRepository;
     private final WorkerRepository workerRepository;
@@ -132,21 +134,24 @@ public class FraudDetectionService {
     }
 
     private double checkLocationMismatch(ClaimInitiatedEvent event) {
-        return workerRepository.findById(event.getWorkerId())
+        Double mismatchScore = workerRepository.findById(event.getWorkerId())
                 .map(Worker::getLocation)
+                .filter(Objects::nonNull)
                 .map(location -> {
-                    if (location == null) {
-                        return 0.5;
-                    }
                     double distanceKm = calculateDistanceKm(
                             location.getLatitude(),
                             location.getLongitude(),
                             event.getDisruptionLatitude(),
                             event.getDisruptionLongitude()
                     );
-                    return distanceKm > locationRadiusKm ? 0.5 : 0.0;
+                    return distanceKm > locationRadiusKm ? LOCATION_MISMATCH_PENALTY : 0.0;
                 })
-                .orElse(0.5);
+                .orElse(LOCATION_MISMATCH_PENALTY);
+        if (mismatchScore >= LOCATION_MISMATCH_PENALTY) {
+            log.warn("Location validation risk for worker {} on claim {} (penalty={})",
+                    event.getWorkerId(), event.getClaimId(), mismatchScore);
+        }
+        return mismatchScore;
     }
 
     private double calculateDistanceKm(double lat1, double lon1, double lat2, double lon2) {

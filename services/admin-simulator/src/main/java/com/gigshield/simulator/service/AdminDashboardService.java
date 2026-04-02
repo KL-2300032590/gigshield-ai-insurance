@@ -16,6 +16,7 @@ import com.gigshield.simulator.repository.SimulationRepository;
 import com.gigshield.simulator.repository.WorkerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -75,17 +76,16 @@ public class AdminDashboardService {
 
     public Mono<AdminServiceHealthDto> getServiceHealth(String serviceName) {
         return getServicesHealth()
-                .flatMap(services -> services.stream()
+                .flatMap(services -> Mono.justOrEmpty(services.stream()
                         .filter(service -> service.getName().equalsIgnoreCase(serviceName.replace('-', ' ')))
-                        .findFirst()
-                        .map(Mono::just)
-                        .orElseGet(() -> Mono.just(AdminServiceHealthDto.builder()
-                                .name(serviceName)
-                                .status("UNKNOWN")
-                                .port(0)
-                                .responseTime(0L)
-                                .details(Map.of())
-                                .build())));
+                        .findFirst()))
+                .switchIfEmpty(Mono.just(AdminServiceHealthDto.builder()
+                        .name(serviceName)
+                        .status("UNKNOWN")
+                        .port(0)
+                        .responseTime(0L)
+                        .details(Map.of())
+                        .build()));
     }
 
     public Mono<List<AdminWorkerDto>> getWorkers() {
@@ -241,13 +241,13 @@ public class AdminDashboardService {
                 .get()
                 .uri("/actuator/health")
                 .retrieve()
-                .bodyToMono(Map.class)
+                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
                 .map(payload -> AdminServiceHealthDto.builder()
                         .name(name)
                         .status("UP")
                         .port(port)
                         .responseTime((System.nanoTime() - start) / 1_000_000)
-                        .details(Map.of("baseUrl", baseUrl, "status", String.valueOf(payload.get("status"))))
+                        .details(Map.of("baseUrl", baseUrl, "status", String.valueOf(payload.getOrDefault("status", "UNKNOWN"))))
                         .build())
                 .onErrorResume(e -> Mono.just(AdminServiceHealthDto.builder()
                         .name(name)
