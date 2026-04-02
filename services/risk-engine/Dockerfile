@@ -1,24 +1,24 @@
-FROM maven:3.9.9-eclipse-temurin-21 AS build
+FROM maven:3.9.9-eclipse-temurin-21-alpine AS build
+WORKDIR /build
 
+# Copy entire services directory structure
+COPY pom.xml ./pom.xml
+COPY common ./common
+COPY api-gateway ./api-gateway
+COPY risk-engine ./risk-engine
+COPY trigger-engine ./trigger-engine
+COPY fraud-detection ./fraud-detection
+COPY claim-service ./claim-service
+COPY payout-service ./payout-service
+
+# Install parent POM and build common module
+RUN mvn -N install && mvn -pl common clean install -DskipTests
+
+# Build the risk-engine service
+RUN mvn -pl risk-engine clean package -DskipTests
+
+FROM eclipse-temurin:21-jdk-alpine
 WORKDIR /app
-
-# copy shared module
-COPY services/common ./common
-
-# build shared module first
-WORKDIR /app/common
-RUN mvn clean install -DskipTests
-
-# copy service
-WORKDIR /app
-COPY services/risk-engine ./risk-engine
-
-# build service
-WORKDIR /app/risk-engine
-RUN mvn clean package -DskipTests
-
-FROM maven:3.9.9-eclipse-temurin-21
-WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /build/risk-engine/target/*.jar app.jar
 EXPOSE 8081
 ENTRYPOINT ["java", "-jar", "app.jar"]

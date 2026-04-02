@@ -105,8 +105,8 @@ services:
   # API Gateway Service
   api-gateway:
     build:
-      context: ./services/api-gateway
-      dockerfile: Dockerfile
+      context: ./services
+      dockerfile: api-gateway/Dockerfile
     container_name: gigshield-api-gateway
     ports:
       - "8080:8080"
@@ -133,8 +133,8 @@ services:
   # Risk Engine Service
   risk-engine:
     build:
-      context: .
-      dockerfile: services/risk-engine/Dockerfile
+      context: ./services
+      dockerfile: risk-engine/Dockerfile
     container_name: gigshield-risk-engine
     ports:
       - "8081:8081"
@@ -153,8 +153,8 @@ services:
   # Trigger Engine Service
   trigger-engine:
     build:
-      context: ./services/trigger-engine
-      dockerfile: Dockerfile
+      context: ./services
+      dockerfile: trigger-engine/Dockerfile
     container_name: gigshield-trigger-engine
     ports:
       - "8082:8082"
@@ -175,8 +175,8 @@ services:
   # Fraud Detection Service
   fraud-detection:
     build:
-      context: ./services/fraud-detection
-      dockerfile: Dockerfile
+      context: ./services
+      dockerfile: fraud-detection/Dockerfile
     container_name: gigshield-fraud-detection
     ports:
       - "8083:8083"
@@ -195,8 +195,8 @@ services:
   # Claim Service
   claim-service:
     build:
-      context: ./services/claim-service
-      dockerfile: Dockerfile
+      context: ./services
+      dockerfile: claim-service/Dockerfile
     container_name: gigshield-claim-service
     ports:
       - "8084:8084"
@@ -218,8 +218,8 @@ services:
   # Payout Service
   payout-service:
     build:
-      context: ./services/payout-service
-      dockerfile: Dockerfile
+      context: ./services
+      dockerfile: payout-service/Dockerfile
     container_name: gigshield-payout-service
     ports:
       - "8085:8085"

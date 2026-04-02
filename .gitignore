@@ -1,0 +1,11 @@
+
+node_modules/
+.next
+
+metadata/
+
+*.jar
+*.jar.original
+
+target/
+classes/

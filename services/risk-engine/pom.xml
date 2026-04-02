@@ -5,30 +5,23 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.0</version>
-        <relativePath/>
+        <groupId>com.gigshield</groupId>
+        <artifactId>gigshield-services</artifactId>
+        <version>1.0.0</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>com.gigshield</groupId>
     <artifactId>risk-engine</artifactId>
-    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <name>GigShield Risk Engine</name>
     <description>Risk Engine - AI-based risk scoring and premium calculation</description>
-
-    <properties>
-        <java.version>17</java.version>
-    </properties>
 
     <dependencies>
         <!-- GigShield Common -->
         <dependency>
             <groupId>com.gigshield</groupId>
             <artifactId>gigshield-common</artifactId>
-            <version>1.0.0</version>
         </dependency>
 
         <!-- Spring Boot Starters -->
@@ -59,7 +52,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <optional>true</optional>
+            <scope>provided</scope>
         </dependency>
 
         <!-- Testing -->
@@ -76,19 +69,16 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>mongodb</artifactId>
-            <version>1.19.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>kafka</artifactId>
-            <version>1.19.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>1.19.3</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -98,14 +88,6 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
-                </configuration>
             </plugin>
         </plugins>
     </build>

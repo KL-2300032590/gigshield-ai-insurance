@@ -7,10 +7,34 @@ AI-powered parametric insurance platform that protects gig delivery workers from
 ## 🚀 Quick Start
 
 ### Prerequisites
-- **Java 17+** (JDK)
-- **Maven 3.8+**
+- **Java 21** (Required - NOT compatible with Java 25)
+- **Maven 3.9+**
 - **Node.js 18+** (with npm)
 - **Docker & Docker Compose** (for infrastructure)
+
+> ⚠️ **CRITICAL:** You must use Java 21. Lombok 1.18.32 will fail with Java 25.
+> See [services/BUILD.md](services/BUILD.md) for detailed setup instructions.
+
+### Build Backend Services
+
+**Quick Build (Using Script):**
+```bash
+cd services
+./build.sh
+```
+
+**Manual Build:**
+```bash
+# Set Java 21
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home
+export PATH=$JAVA_HOME/bin:$PATH
+
+# Build all services
+cd services
+mvn clean install
+```
+
+For detailed build instructions, see [services/BUILD.md](services/BUILD.md)
 
 ### Run with Docker Compose (Recommended)
 
@@ -39,13 +63,21 @@ docker-compose up -d mongodb redis zookeeper kafka
 
 **2. Build & Run Backend**
 ```bash
-cd services/common && mvn clean install
-cd ../api-gateway && mvn spring-boot:run &
-cd ../risk-engine && mvn spring-boot:run &
-cd ../trigger-engine && mvn spring-boot:run &
-cd ../fraud-detection && mvn spring-boot:run &
-cd ../claim-service && mvn spring-boot:run &
-cd ../payout-service && mvn spring-boot:run &
+# Ensure Java 21 is active
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home
+export PATH=$JAVA_HOME/bin:$PATH
+
+# Build common module first
+cd services
+mvn clean install -DskipTests
+
+# Run services (each in a separate terminal)
+cd api-gateway && mvn spring-boot:run
+cd risk-engine && mvn spring-boot:run
+cd trigger-engine && mvn spring-boot:run
+cd fraud-detection && mvn spring-boot:run
+cd claim-service && mvn spring-boot:run
+cd payout-service && mvn spring-boot:run
 ```
 
 **3. Run Frontend**
@@ -58,10 +90,13 @@ npm run dev
 ### Run Tests
 
 ```bash
-# Backend tests (from services directory)
-cd services/common && mvn test
-cd ../api-gateway && mvn test
-# ... repeat for each service
+# Backend tests (all 49 tests)
+cd services
+./build.sh  # Includes tests
+
+# Or manually with Java 21
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home
+cd services && mvn test
 
 # Frontend tests
 cd frontend && npm test
@@ -226,10 +261,12 @@ Uses anomaly detection to identify suspicious claims such as:
 | Layer | Technology |
 |-------|------------|
 | Frontend | Next.js 14, Tailwind CSS, Framer Motion |
-| Backend | Spring Boot 3.2, Java 17 |
+| Backend | Spring Boot 3.2, Java 21 |
 | Event Streaming | Apache Kafka |
 | Caching | Redis |
 | Database | MongoDB |
+| Build Tool | Maven 3.9+ |
+| Dependency Management | Parent POM (centralized versions) |
 | API Documentation | OpenAPI 3.0 |
 | Containerization | Docker, Docker Compose |
 
@@ -396,12 +433,24 @@ For production, configure real API keys:
 
 ## 🧪 Testing
 
+All 49 tests pass across 7 microservices:
+- Common: 19 tests (DateUtils, GeoUtils)
+- API Gateway: 11 tests (WorkerService, AuthService)
+- Risk Engine: 3 tests
+- Trigger Engine: 6 tests
+- Fraud Detection: 3 tests
+- Claim Service: 3 tests
+- Payout Service: 4 tests
+
 ### Backend Unit Tests
 ```bash
-# Run all service tests
-for dir in common api-gateway risk-engine trigger-engine fraud-detection claim-service payout-service; do
-  cd services/$dir && mvn test && cd ../..
-done
+# Run all tests (requires Java 21)
+cd services
+./build.sh
+
+# Or manually
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home
+cd services && mvn test
 ```
 
 ### Frontend Tests
@@ -411,6 +460,20 @@ npm test              # Run tests
 npm run test:watch    # Watch mode
 npm run test:coverage # Coverage report
 ```
+
+---
+
+## ⚠️ Troubleshooting
+
+### Error: "TypeTag :: UNKNOWN" or Lombok compilation errors
+**Cause:** Using Java 25 instead of Java 21  
+**Solution:** Set Java 21 as described in [services/BUILD.md](services/BUILD.md)
+
+### Build fails with "Could not find artifact com.gigshield:gigshield-services:pom"
+**Cause:** Parent POM not installed  
+**Solution:** Run `mvn clean install` from services directory with Java 21
+
+For more troubleshooting, see [services/BUILD.md](services/BUILD.md)
 
 ---
 

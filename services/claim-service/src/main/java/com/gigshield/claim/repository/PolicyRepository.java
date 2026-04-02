@@ -16,7 +16,7 @@ public interface PolicyRepository extends MongoRepository<Policy, String> {
     
     Optional<Policy> findByWorkerIdAndWeekNumberAndYear(String workerId, int weekNumber, int year);
     
-    @Query("{ 'status': ?2, 'startDate': { $lte: ?1 }, 'endDate': { $gte: ?1 } }")
+    @Query("{ 'city': ?0, 'status': ?2, 'startDate': { $lte: ?1 }, 'endDate': { $gte: ?1 } }")
     List<Policy> findActivePoliciesInCity(String city, LocalDate date, Policy.PolicyStatus status);
     
     @Query("{ 'status': ?1, 'startDate': { $lte: ?0 }, 'endDate': { $gte: ?0 } }")

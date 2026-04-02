@@ -155,6 +155,8 @@ public class RazorpayClient {
     
     @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     private static class CreatePayoutRequest {
         private String accountNumber;
         private String fundAccountId;
@@ -165,6 +167,8 @@ public class RazorpayClient {
     }
     
     @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
     private static class RazorpayResponse {
         private String id;
         private String status;
