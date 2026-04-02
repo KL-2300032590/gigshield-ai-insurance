@@ -1,5 +1,8 @@
 package com.gigshield.simulator.service;
 
+import com.gigshield.common.model.Claim;
+import com.gigshield.common.model.Policy;
+import com.gigshield.common.model.Worker;
 import com.gigshield.simulator.dto.dashboard.AdminClaimDto;
 import com.gigshield.simulator.dto.dashboard.AdminKafkaEventDto;
 import com.gigshield.simulator.dto.dashboard.AdminLogDto;
@@ -7,56 +10,90 @@ import com.gigshield.simulator.dto.dashboard.AdminPolicyDto;
 import com.gigshield.simulator.dto.dashboard.AdminServiceHealthDto;
 import com.gigshield.simulator.dto.dashboard.AdminWorkerDto;
 import com.gigshield.simulator.model.Simulation;
+import com.gigshield.simulator.repository.ClaimRepository;
+import com.gigshield.simulator.repository.PolicyRepository;
 import com.gigshield.simulator.repository.SimulationRepository;
+import com.gigshield.simulator.repository.WorkerRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
 public class AdminDashboardService {
 
-    private static final List<String> CITIES = List.of("Mumbai", "Delhi", "Bangalore", "Hyderabad", "Chennai", "Kolkata", "Pune");
-    private static final List<String> GIG_TYPES = List.of("DELIVERY", "RIDE_SHARE", "FOOD_DELIVERY");
-    private static final List<String> PLAN_TYPES = List.of("BRONZE", "SILVER", "GOLD", "PLATINUM");
-
     private final SimulationRepository simulationRepository;
+    private final WorkerRepository workerRepository;
+    private final PolicyRepository policyRepository;
+    private final ClaimRepository claimRepository;
+
+    @Value("${services.health.api-gateway-url:http://api-gateway:8080}")
+    private String apiGatewayUrl;
+
+    @Value("${services.health.risk-engine-url:http://risk-engine:8081}")
+    private String riskEngineUrl;
+
+    @Value("${services.health.trigger-engine-url:http://trigger-engine:8082}")
+    private String triggerEngineUrl;
+
+    @Value("${services.health.fraud-detection-url:http://fraud-detection:8083}")
+    private String fraudDetectionUrl;
+
+    @Value("${services.health.claim-service-url:http://claim-service:8084}")
+    private String claimServiceUrl;
+
+    @Value("${services.health.payout-service-url:http://payout-service:8085}")
+    private String payoutServiceUrl;
+
+    @Value("${services.health.admin-simulator-url:http://admin-simulator:8091}")
+    private String adminSimulatorUrl;
 
     public Mono<List<AdminServiceHealthDto>> getServicesHealth() {
-        return Mono.just(List.of(
-                serviceHealth("API Gateway", 8080, "UP"),
-                serviceHealth("Risk Engine", 8081, "UP"),
-                serviceHealth("Trigger Engine", 8082, "UP"),
-                serviceHealth("Fraud Detection", 8083, "UP"),
-                serviceHealth("Claim Service", 8084, "UP"),
-                serviceHealth("Payout Service", 8085, "UP"),
-                serviceHealth("Admin Simulator", 8091, "UP")
+        return Mono.zip(
+                serviceHealth("API Gateway", 8080, apiGatewayUrl),
+                serviceHealth("Risk Engine", 8081, riskEngineUrl),
+                serviceHealth("Trigger Engine", 8082, triggerEngineUrl),
+                serviceHealth("Fraud Detection", 8083, fraudDetectionUrl),
+                serviceHealth("Claim Service", 8084, claimServiceUrl),
+                serviceHealth("Payout Service", 8085, payoutServiceUrl),
+                serviceHealth("Admin Simulator", 8091, adminSimulatorUrl)
+        ).map(tuple -> List.of(
+                tuple.getT1(), tuple.getT2(), tuple.getT3(), tuple.getT4(),
+                tuple.getT5(), tuple.getT6(), tuple.getT7()
         ));
     }
 
     public Mono<AdminServiceHealthDto> getServiceHealth(String serviceName) {
         return getServicesHealth()
-                .map(services -> services.stream()
+                .flatMap(services -> services.stream()
                         .filter(service -> service.getName().equalsIgnoreCase(serviceName.replace('-', ' ')))
                         .findFirst()
-                        .orElse(serviceHealth(serviceName, 0, "UNKNOWN")));
+                        .map(Mono::just)
+                        .orElseGet(() -> Mono.just(AdminServiceHealthDto.builder()
+                                .name(serviceName)
+                                .status("UNKNOWN")
+                                .port(0)
+                                .responseTime(0L)
+                                .details(Map.of())
+                                .build())));
     }
 
     public Mono<List<AdminWorkerDto>> getWorkers() {
-        return simulationRepository.findAll().collectList().map(this::buildWorkers);
+        return workerRepository.findAll()
+                .map(this::toAdminWorker)
+                .sort(Comparator.comparing(AdminWorkerDto::getRegisteredAt,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
+                .collectList();
     }
 
     public Mono<AdminWorkerDto> getWorkerById(String id) {
@@ -69,7 +106,11 @@ public class AdminDashboardService {
     }
 
     public Mono<List<AdminPolicyDto>> getPolicies() {
-        return simulationRepository.findAll().collectList().map(this::buildPolicies);
+        return policyRepository.findAll()
+                .map(this::toAdminPolicy)
+                .sort(Comparator.comparing(AdminPolicyDto::getStartDate,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
+                .collectList();
     }
 
     public Mono<AdminPolicyDto> getPolicyById(String id) {
@@ -82,13 +123,17 @@ public class AdminDashboardService {
     }
 
     public Mono<List<AdminClaimDto>> getClaims(Optional<String> status, Optional<String> city) {
-        return simulationRepository.findAll().collectList().map(simulations -> {
-            List<AdminClaimDto> claims = buildClaims(simulations);
-            return claims.stream()
-                    .filter(claim -> status.map(s -> claim.getStatus().equalsIgnoreCase(s)).orElse(true))
-                    .filter(claim -> city.map(c -> claim.getCity().equalsIgnoreCase(c)).orElse(true))
-                    .toList();
-        });
+        return claimRepository.findAll()
+                .map(this::toAdminClaim)
+                .filter(claim -> status
+                        .map(s -> claim.getStatus() != null && claim.getStatus().equalsIgnoreCase(s))
+                        .orElse(true))
+                .filter(claim -> city
+                        .map(c -> claim.getCity() != null && claim.getCity().equalsIgnoreCase(c))
+                        .orElse(true))
+                .sort(Comparator.comparing(AdminClaimDto::getCreatedAt,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
+                .collectList();
     }
 
     public Mono<AdminClaimDto> getClaimById(String id) {
@@ -188,134 +233,72 @@ public class AdminDashboardService {
                 });
     }
 
-    private AdminServiceHealthDto serviceHealth(String name, int port, String status) {
-        return AdminServiceHealthDto.builder()
-                .name(name)
-                .status(status)
-                .port(port)
-                .responseTime(ThreadLocalRandom.current().nextLong(12, 85))
-                .details(Map.of("version", "1.0.0", "environment", "local"))
+    private Mono<AdminServiceHealthDto> serviceHealth(String name, int port, String baseUrl) {
+        long start = System.nanoTime();
+        return WebClient.builder()
+                .baseUrl(baseUrl)
+                .build()
+                .get()
+                .uri("/actuator/health")
+                .retrieve()
+                .bodyToMono(Map.class)
+                .map(payload -> AdminServiceHealthDto.builder()
+                        .name(name)
+                        .status("UP")
+                        .port(port)
+                        .responseTime((System.nanoTime() - start) / 1_000_000)
+                        .details(Map.of("baseUrl", baseUrl, "status", String.valueOf(payload.get("status"))))
+                        .build())
+                .onErrorResume(e -> Mono.just(AdminServiceHealthDto.builder()
+                        .name(name)
+                        .status("DOWN")
+                        .port(port)
+                        .responseTime((System.nanoTime() - start) / 1_000_000)
+                        .details(Map.of("baseUrl", baseUrl, "error", e.getMessage()))
+                        .build()));
+    }
+
+    private AdminWorkerDto toAdminWorker(Worker worker) {
+        String city = worker.getLocation() != null ? worker.getLocation().getCity() : null;
+        return AdminWorkerDto.builder()
+                .id(worker.getId())
+                .name(worker.getName())
+                .email(worker.getEmail())
+                .phone(worker.getPhone())
+                .city(city)
+                .gigType(worker.getPlatform())
+                .status(worker.getStatus() != null ? worker.getStatus().name() : "UNKNOWN")
+                .registeredAt(worker.getCreatedAt())
                 .build();
     }
 
-    private List<AdminWorkerDto> buildWorkers(List<Simulation> simulations) {
-        Instant now = Instant.now();
-        int baseCount = Math.max(24, simulations.size() * 3);
-
-        return IntStream.range(0, baseCount)
-                .mapToObj(index -> {
-                    String city = CITIES.get(index % CITIES.size());
-                    String gigType = GIG_TYPES.get(index % GIG_TYPES.size());
-                    return AdminWorkerDto.builder()
-                            .id(String.format("W-%04d", index + 1))
-                            .name(String.format("Worker %02d", index + 1))
-                            .email(String.format("worker%02d@gigshield.ai", index + 1))
-                            .phone(String.format("900000%04d", index))
-                            .city(city)
-                            .gigType(gigType)
-                            .status(index % 7 == 0 ? "INACTIVE" : "ACTIVE")
-                            .registeredAt(now.minusSeconds((long) index * 8640))
-                            .build();
-                })
-                .toList();
+    private AdminPolicyDto toAdminPolicy(Policy policy) {
+        return AdminPolicyDto.builder()
+                .id(policy.getId())
+                .workerId(policy.getWorkerId())
+                .planType("WEEKLY")
+                .city(policy.getCity())
+                .status(policy.getStatus() != null ? policy.getStatus().name() : "UNKNOWN")
+                .premium(policy.getPremium() != null ? policy.getPremium().intValue() : 0)
+                .coverage(policy.getCoverageLimit() != null ? policy.getCoverageLimit().intValue() : 0)
+                .startDate(policy.getStartDate())
+                .endDate(policy.getEndDate())
+                .build();
     }
 
-    private List<AdminPolicyDto> buildPolicies(List<Simulation> simulations) {
-        List<AdminWorkerDto> workers = buildWorkers(simulations);
-        LocalDate today = LocalDate.now(ZoneOffset.UTC);
-
-        return workers.stream().limit(Math.max(18, workers.size() - 4))
-                .map(worker -> {
-                    int index = Integer.parseInt(worker.getId().substring(2));
-                    String planType = PLAN_TYPES.get(index % PLAN_TYPES.size());
-                    int premium = switch (planType) {
-                        case "BRONZE" -> 299;
-                        case "SILVER" -> 599;
-                        case "GOLD" -> 999;
-                        default -> 1499;
-                    };
-                    int coverage = switch (planType) {
-                        case "BRONZE" -> 15000;
-                        case "SILVER" -> 30000;
-                        case "GOLD" -> 50000;
-                        default -> 100000;
-                    };
-                    boolean expired = index % 11 == 0;
-                    return AdminPolicyDto.builder()
-                            .id(String.format("POL-%04d", index))
-                            .workerId(worker.getId())
-                            .planType(planType)
-                            .city(worker.getCity())
-                            .status(expired ? "EXPIRED" : "ACTIVE")
-                            .premium(premium)
-                            .coverage(coverage)
-                            .startDate(today.minusWeeks(index % 12 + 1L))
-                            .endDate(today.plusWeeks(expired ? -1 : 1))
-                            .build();
-                })
-                .toList();
-    }
-
-    private List<AdminClaimDto> buildClaims(List<Simulation> simulations) {
-        List<AdminPolicyDto> policies = buildPolicies(simulations);
-        List<AdminClaimDto> claims = new ArrayList<>();
-
-        int sequence = 1;
-        for (Simulation simulation : simulations.stream().sorted(Comparator.comparing(Simulation::getCreatedAt).reversed()).toList()) {
-            AdminPolicyDto policy = policies.get(sequence % policies.size());
-            String status = claimStatusFromSimulation(simulation.getStatus(), sequence);
-            int amount = (int) Math.max(1500, Math.min(12000, Math.round(simulation.getSimulatedValue() * 80)));
-            Instant createdAt = defaultInstant(simulation.getCreatedAt());
-            claims.add(AdminClaimDto.builder()
-                    .id(String.format("CLM-%04d", sequence))
-                    .policyId(policy.getId())
-                    .workerId(policy.getWorkerId())
-                    .triggerType(simulation.getEventType())
-                    .status(status)
-                    .amount(amount)
-                    .city(simulation.getCity())
-                    .createdAt(createdAt)
-                    .updatedAt(defaultInstant(simulation.getCompletedAt()))
-                    .build());
-            sequence++;
-        }
-
-        while (claims.size() < 20) {
-            AdminPolicyDto policy = policies.get(sequence % policies.size());
-            Instant createdAt = Instant.now().minusSeconds((long) sequence * 3600);
-            claims.add(AdminClaimDto.builder()
-                    .id(String.format("CLM-%04d", sequence))
-                    .policyId(policy.getId())
-                    .workerId(policy.getWorkerId())
-                    .triggerType(sequence % 2 == 0 ? "HEAVY_RAIN" : "HIGH_AQI")
-                    .status(sequence % 5 == 0 ? "PENDING" : sequence % 3 == 0 ? "PAID" : "APPROVED")
-                    .amount(2500 + (sequence % 8) * 700)
-                    .city(policy.getCity())
-                    .createdAt(createdAt)
-                    .updatedAt(createdAt.plusSeconds(1800))
-                    .build());
-            sequence++;
-        }
-
-        return claims.stream()
-                .sorted(Comparator.comparing(AdminClaimDto::getCreatedAt).reversed())
-                .toList();
-    }
-
-    private String claimStatusFromSimulation(String simulationStatus, int index) {
-        if (Objects.equals(simulationStatus, "FAILED")) {
-            return "REJECTED";
-        }
-        if (Objects.equals(simulationStatus, "IN_PROGRESS")) {
-            return "VALIDATING";
-        }
-        if (index % 4 == 0) {
-            return "PAID";
-        }
-        if (index % 5 == 0) {
-            return "PENDING";
-        }
-        return "APPROVED";
+    private AdminClaimDto toAdminClaim(Claim claim) {
+        String city = claim.getTriggerData() != null ? claim.getTriggerData().getLocation() : null;
+        return AdminClaimDto.builder()
+                .id(claim.getId())
+                .policyId(claim.getPolicyId())
+                .workerId(claim.getWorkerId())
+                .triggerType(claim.getTriggerType() != null ? claim.getTriggerType().name() : "UNKNOWN")
+                .status(claim.getStatus() != null ? claim.getStatus().name() : "UNKNOWN")
+                .amount(claim.getAmount() != null ? claim.getAmount().intValue() : 0)
+                .city(city)
+                .createdAt(claim.getCreatedAt())
+                .updatedAt(claim.getUpdatedAt())
+                .build();
     }
 
     private AdminKafkaEventDto toEvent(Simulation simulation) {

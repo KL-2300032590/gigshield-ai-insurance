@@ -2,8 +2,10 @@ package com.gigshield.fraud.service;
 
 import com.gigshield.common.events.ClaimInitiatedEvent;
 import com.gigshield.common.model.Claim.TriggerType;
+import com.gigshield.common.model.Worker;
 import com.gigshield.fraud.model.FraudCheck;
 import com.gigshield.fraud.repository.FraudCheckRepository;
+import com.gigshield.fraud.repository.WorkerRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,6 +18,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -30,6 +33,9 @@ class FraudDetectionServiceTest {
     @Mock
     private KafkaTemplate<String, Object> kafkaTemplate;
 
+    @Mock
+    private WorkerRepository workerRepository;
+
     @InjectMocks
     private FraudDetectionService fraudDetectionService;
 
@@ -39,6 +45,7 @@ class FraudDetectionServiceTest {
     void setUp() {
         ReflectionTestUtils.setField(fraudDetectionService, "fraudScoreThreshold", 0.7);
         ReflectionTestUtils.setField(fraudDetectionService, "duplicateClaimHours", 24);
+        ReflectionTestUtils.setField(fraudDetectionService, "locationRadiusKm", 50.0);
 
         claimEvent = ClaimInitiatedEvent.builder()
                 .claimId("claim123")
@@ -48,8 +55,20 @@ class FraudDetectionServiceTest {
                 .measuredValue(75.0)
                 .threshold(50.0)
                 .city("Mumbai")
+                .disruptionLatitude(19.076)
+                .disruptionLongitude(72.877)
                 .amount(new BigDecimal("800"))
                 .build();
+
+        Worker worker = Worker.builder()
+                .id("worker123")
+                .location(Worker.Location.builder()
+                        .latitude(19.076)
+                        .longitude(72.877)
+                        .city("Mumbai")
+                        .build())
+                .build();
+        when(workerRepository.findById("worker123")).thenReturn(Optional.of(worker));
     }
 
     @Test

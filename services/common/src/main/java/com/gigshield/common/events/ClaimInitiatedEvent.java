@@ -25,5 +25,7 @@ public class ClaimInitiatedEvent extends BaseEvent {
     private double measuredValue;
     private double threshold;
     private String city;
+    private double disruptionLatitude;
+    private double disruptionLongitude;
     private BigDecimal amount;
 }

@@ -50,6 +50,8 @@ payment:
   retry:
     max-attempts: 3
     delay-ms: 5000
+  location:
+    validation-radius-km: ${PAYOUT_LOCATION_VALIDATION_RADIUS_KM:50}
 
 management:
   endpoints:

@@ -3,8 +3,10 @@ package com.gigshield.fraud.service;
 import com.gigshield.common.events.ClaimInitiatedEvent;
 import com.gigshield.common.events.ClaimValidatedEvent;
 import com.gigshield.common.events.KafkaTopics;
+import com.gigshield.common.model.Worker;
 import com.gigshield.fraud.model.FraudCheck;
 import com.gigshield.fraud.repository.FraudCheckRepository;
+import com.gigshield.fraud.repository.WorkerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,8 +22,11 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class FraudDetectionService {
+
+    private static final double EARTH_RADIUS_KM = 6371.0;
     
     private final FraudCheckRepository fraudCheckRepository;
+    private final WorkerRepository workerRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
     
     @Value("${fraud.thresholds.fraud-score-max:0.7}")
@@ -29,6 +34,9 @@ public class FraudDetectionService {
     
     @Value("${fraud.thresholds.duplicate-claim-hours:24}")
     private int duplicateClaimHours;
+
+    @Value("${fraud.thresholds.location-radius-km:50}")
+    private double locationRadiusKm;
     
     public void validateClaim(ClaimInitiatedEvent event) {
         log.info("Validating claim {} for worker {}", event.getClaimId(), event.getWorkerId());
@@ -54,6 +62,13 @@ public class FraudDetectionService {
         if (amountScore > 0) {
             flags.add("AMOUNT_ANOMALY");
             fraudScore += amountScore;
+        }
+
+        // Check 4: Worker location vs disruption location
+        double locationScore = checkLocationMismatch(event);
+        if (locationScore > 0) {
+            flags.add("LOCATION_MISMATCH");
+            fraudScore += locationScore;
         }
         
         // Normalize score to 0-1
@@ -114,6 +129,36 @@ public class FraudDetectionService {
             return 0.2;
         }
         return 0.0;
+    }
+
+    private double checkLocationMismatch(ClaimInitiatedEvent event) {
+        return workerRepository.findById(event.getWorkerId())
+                .map(Worker::getLocation)
+                .map(location -> {
+                    if (location == null) {
+                        return 0.5;
+                    }
+                    double distanceKm = calculateDistanceKm(
+                            location.getLatitude(),
+                            location.getLongitude(),
+                            event.getDisruptionLatitude(),
+                            event.getDisruptionLongitude()
+                    );
+                    return distanceKm > locationRadiusKm ? 0.5 : 0.0;
+                })
+                .orElse(0.5);
+    }
+
+    private double calculateDistanceKm(double lat1, double lon1, double lat2, double lon2) {
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return EARTH_RADIUS_KM * c;
     }
     
     private void publishValidationResult(ClaimInitiatedEvent event, boolean approved, 

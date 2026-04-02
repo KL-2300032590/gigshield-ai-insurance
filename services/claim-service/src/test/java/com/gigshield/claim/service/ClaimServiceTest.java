@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -60,10 +61,14 @@ class ClaimServiceTest {
                 .workerId("worker123")
                 .premium(new BigDecimal("35.00"))
                 .coverageLimit(new BigDecimal("800.00"))
+                .city("Mumbai")
+                .latitude(19.076)
+                .longitude(72.877)
                 .status(Policy.PolicyStatus.ACTIVE)
                 .startDate(LocalDate.now().minusDays(1))
                 .endDate(LocalDate.now().plusDays(6))
                 .build();
+        ReflectionTestUtils.setField(claimService, "locationValidationRadiusKm", 50.0);
     }
 
     @Test

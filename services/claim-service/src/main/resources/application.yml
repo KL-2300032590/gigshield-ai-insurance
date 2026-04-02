@@ -47,6 +47,8 @@ spring:
 
 claim:
   default-payout-percentage: 100  # Percentage of coverage limit
+  location:
+    validation-radius-km: ${CLAIM_LOCATION_VALIDATION_RADIUS_KM:50}
 
 management:
   endpoints:
