@@ -274,23 +274,6 @@ services:
     networks:
       - gigshield-network
 
-  # Admin Dashboard (Next.js)
-  admin-dashboard:
-    build:
-      context: ./admin-dashboard
-      dockerfile: Dockerfile
-    platform: linux/arm64  # Explicit platform for multi-arch support
-    container_name: gigshield-admin-dashboard
-    ports:
-      - "3001:3001"
-    environment:
-      NEXT_PUBLIC_API_URL: http://admin-simulator:8091
-      NEXT_PUBLIC_SIMULATOR_URL: http://admin-simulator:8091
-    depends_on:
-      - admin-simulator
-    networks:
-      - gigshield-network
-
   # Frontend
   frontend:
     build:
@@ -312,7 +295,7 @@ services:
     build:
       context: ./admin-dashboard
       dockerfile: Dockerfile
-    platform: linux/amd64
+    platform: linux/arm64
     container_name: gigshield-admin-dashboard
     ports:
       - "3001:3000"
