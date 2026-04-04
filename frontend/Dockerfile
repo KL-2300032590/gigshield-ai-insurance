@@ -1,5 +1,13 @@
 FROM node:20-alpine AS base
 
+# Accept build arguments
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_RAZORPAY_KEY
+
+# Set them as env so React can read during build
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_RAZORPAY_KEY=$NEXT_RAZORPAY_KEY
+
 FROM base AS deps
 WORKDIR /app
 COPY package.json package-lock.json* ./
