@@ -34,7 +34,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center justify-between h-16">
             <Link href="/dashboard" className="flex items-center gap-2">
               <Shield className="w-8 h-8 text-primary-600" />
-              <span className="font-bold text-xl text-slate-900">GigShield</span>
+              <span className="font-bold text-xl text-slate-900">Parametrix</span>
             </Link>
 
             <div className="flex items-center gap-4">

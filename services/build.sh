@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# GigShield Services Build Script
+# Parametrix Services Build Script
 # Ensures Java 21 is used for Lombok compatibility
 
 set -e  # Exit on error
 
 echo "========================================="
-echo "GigShield Services Build Script"
+echo "Parametrix Services Build Script"
 echo "========================================="
 echo ""
 

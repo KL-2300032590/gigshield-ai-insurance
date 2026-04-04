@@ -1,4 +1,4 @@
-# GigShield Services Build Guide
+# Parametrix Services Build Guide
 
 ## Prerequisites
 
@@ -131,7 +131,7 @@ cd services
 **Cause:** Using Java 25 instead of Java 21  
 **Solution:** Set `JAVA_HOME` to Java 21 (see above)
 
-### Error: "Could not find artifact com.gigshield:gigshield-services:pom:1.0.0"
+### Error: "Could not find artifact com.parametrix:parametrix-services:pom:1.0.0"
 **Cause:** Parent POM not installed  
 **Solution:** Run `mvn clean install` from the `services` directory
 

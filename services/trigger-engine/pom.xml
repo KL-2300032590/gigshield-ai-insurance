@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.gigshield</groupId>
-        <artifactId>gigshield-services</artifactId>
+        <groupId>com.parametrix</groupId>
+        <artifactId>parametrix-services</artifactId>
         <version>1.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
@@ -14,14 +14,14 @@
     <artifactId>trigger-engine</artifactId>
     <packaging>jar</packaging>
 
-    <name>GigShield Trigger Engine</name>
+    <name>Parametrix Trigger Engine</name>
     <description>Trigger Engine - Environmental monitoring and disruption detection</description>
 
     <dependencies>
-        <!-- GigShield Common -->
+        <!-- Parametrix Common -->
         <dependency>
-            <groupId>com.gigshield</groupId>
-            <artifactId>gigshield-common</artifactId>
+            <groupId>com.parametrix</groupId>
+            <artifactId>parametrix-common</artifactId>
         </dependency>
 
         <!-- Spring Boot Starters -->

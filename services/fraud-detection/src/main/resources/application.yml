@@ -7,7 +7,7 @@ spring:
   
   data:
     mongodb:
-      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/gigshield}
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/parametrix}
       auto-index-creation: true
   
   kafka:
@@ -17,28 +17,28 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
         spring.json.type.mapping: >
-          worker.registered:com.gigshield.common.events.WorkerRegisteredEvent,
-          policy.purchased:com.gigshield.common.events.PolicyPurchasedEvent,
-          environment.disruption:com.gigshield.common.events.EnvironmentDisruptionEvent,
-          claim.initiated:com.gigshield.common.events.ClaimInitiatedEvent,
-          claim.validated:com.gigshield.common.events.ClaimValidatedEvent,
-          claim.approved:com.gigshield.common.events.ClaimApprovedEvent,
-          payout.completed:com.gigshield.common.events.PayoutCompletedEvent
+          worker.registered:com.parametrix.common.events.WorkerRegisteredEvent,
+          policy.purchased:com.parametrix.common.events.PolicyPurchasedEvent,
+          environment.disruption:com.parametrix.common.events.EnvironmentDisruptionEvent,
+          claim.initiated:com.parametrix.common.events.ClaimInitiatedEvent,
+          claim.validated:com.parametrix.common.events.ClaimValidatedEvent,
+          claim.approved:com.parametrix.common.events.ClaimApprovedEvent,
+          payout.completed:com.parametrix.common.events.PayoutCompletedEvent
     consumer:
       group-id: fraud-detection
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
-        spring.json.trusted.packages: com.gigshield.common.events
+        spring.json.trusted.packages: com.parametrix.common.events
         spring.json.type.mapping: >
-          worker.registered:com.gigshield.common.events.WorkerRegisteredEvent,
-          policy.purchased:com.gigshield.common.events.PolicyPurchasedEvent,
-          environment.disruption:com.gigshield.common.events.EnvironmentDisruptionEvent,
-          claim.initiated:com.gigshield.common.events.ClaimInitiatedEvent,
-          claim.validated:com.gigshield.common.events.ClaimValidatedEvent,
-          claim.approved:com.gigshield.common.events.ClaimApprovedEvent,
-          payout.completed:com.gigshield.common.events.PayoutCompletedEvent
+          worker.registered:com.parametrix.common.events.WorkerRegisteredEvent,
+          policy.purchased:com.parametrix.common.events.PolicyPurchasedEvent,
+          environment.disruption:com.parametrix.common.events.EnvironmentDisruptionEvent,
+          claim.initiated:com.parametrix.common.events.ClaimInitiatedEvent,
+          claim.validated:com.parametrix.common.events.ClaimValidatedEvent,
+          claim.approved:com.parametrix.common.events.ClaimApprovedEvent,
+          payout.completed:com.parametrix.common.events.PayoutCompletedEvent
 
 fraud:
   thresholds:
@@ -54,4 +54,4 @@ management:
 
 logging:
   level:
-    com.gigshield: DEBUG
+    com.parametrix: DEBUG

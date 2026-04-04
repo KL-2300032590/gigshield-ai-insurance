@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# GigShield Multi-Architecture Build Script
+# Parametrix Multi-Architecture Build Script
 # Builds Docker images for both AMD64 (Intel/Windows) and ARM64 (Apple Silicon/Mac)
 # Usage: ./build-multiarch.sh [--push] [--service SERVICE_NAME]
 
@@ -15,7 +15,7 @@ NC='\033[0m' # No Color
 
 # Configuration
 PLATFORMS="linux/amd64,linux/arm64"
-DOCKER_REGISTRY="${DOCKER_REGISTRY:-gigshield}"  # Default registry/namespace
+DOCKER_REGISTRY="${DOCKER_REGISTRY:-parametrix}"  # Default registry/namespace
 BUILD_CONTEXT="."
 PUSH_FLAG=""
 SPECIFIC_SERVICE=""
@@ -49,7 +49,7 @@ if ! docker buildx version &> /dev/null; then
 fi
 
 # Check if builder exists, create if not
-BUILDER_NAME="gigshield-multiarch"
+BUILDER_NAME="parametrix-multiarch"
 if ! docker buildx inspect "$BUILDER_NAME" &> /dev/null; then
     echo -e "${YELLOW}Creating multi-arch builder: $BUILDER_NAME${NC}"
     docker buildx create --name "$BUILDER_NAME" --driver docker-container --bootstrap --platform "$PLATFORMS"

@@ -6,14 +6,14 @@ The risk-engine service was failing with the following error:
 
 ```
 java.lang.IllegalArgumentException: The class 'worker.registered' is not in the trusted packages: 
-[java.util, java.lang, com.gigshield.common.events]
+[java.util, java.lang, com.parametrix.common.events]
 ```
 
 ## Root Cause
 
 **Kafka Type ID Mismatch:**
 - The producer (api-gateway) was sending events with a **simple type ID** like `worker.registered`
-- The consumer (risk-engine and other services) expected the **full class name** like `com.gigshield.common.events.WorkerRegisteredEvent`
+- The consumer (risk-engine and other services) expected the **full class name** like `com.parametrix.common.events.WorkerRegisteredEvent`
 - The type mapping configuration was missing in consumer services
 
 ## Solution
@@ -26,18 +26,18 @@ All services now include this mapping in their Kafka producer and consumer prope
 
 ```yaml
 spring.json.type.mapping: >
-  worker.registered:com.gigshield.common.events.WorkerRegisteredEvent,
-  policy.purchased:com.gigshield.common.events.PolicyPurchasedEvent,
-  environment.disruption:com.gigshield.common.events.EnvironmentDisruptionEvent,
-  claim.initiated:com.gigshield.common.events.ClaimInitiatedEvent,
-  claim.validated:com.gigshield.common.events.ClaimValidatedEvent,
-  claim.approved:com.gigshield.common.events.ClaimApprovedEvent,
-  payout.completed:com.gigshield.common.events.PayoutCompletedEvent
+  worker.registered:com.parametrix.common.events.WorkerRegisteredEvent,
+  policy.purchased:com.parametrix.common.events.PolicyPurchasedEvent,
+  environment.disruption:com.parametrix.common.events.EnvironmentDisruptionEvent,
+  claim.initiated:com.parametrix.common.events.ClaimInitiatedEvent,
+  claim.validated:com.parametrix.common.events.ClaimValidatedEvent,
+  claim.approved:com.parametrix.common.events.ClaimApprovedEvent,
+  payout.completed:com.parametrix.common.events.PayoutCompletedEvent
 ```
 
 This tells Spring Kafka to:
 1. **When producing**: Send type ID as `worker.registered` instead of full class name
-2. **When consuming**: Map `worker.registered` back to `com.gigshield.common.events.WorkerRegisteredEvent`
+2. **When consuming**: Map `worker.registered` back to `com.parametrix.common.events.WorkerRegisteredEvent`
 
 ## Files Modified
 

@@ -1,6 +1,6 @@
-# GigShield Admin Dashboard
+# Parametrix Admin Dashboard
 
-Professional operations dashboard for GigShield microservices with live backend connectivity via `admin-simulator`.
+Professional operations dashboard for Parametrix microservices with live backend connectivity via `admin-simulator`.
 
 ## Features
 
@@ -18,7 +18,7 @@ Professional operations dashboard for GigShield microservices with live backend 
 
 ## Environment
 
-Create `/home/runner/work/gigshield-ai-insurance/gigshield-ai-insurance/admin-dashboard/.env.local`:
+Create `/home/runner/work/parametrix-ai-insurance/parametrix-ai-insurance/admin-dashboard/.env.local`:
 
 ```bash
 NEXT_PUBLIC_API_URL=http://localhost:8091
@@ -30,7 +30,7 @@ NEXT_PUBLIC_SIMULATOR_URL=http://localhost:8091
 ## Run locally
 
 ```bash
-cd /home/runner/work/gigshield-ai-insurance/gigshield-ai-insurance/admin-dashboard
+cd /home/runner/work/parametrix-ai-insurance/parametrix-ai-insurance/admin-dashboard
 npm ci
 npm run dev
 ```

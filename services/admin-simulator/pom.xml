@@ -6,20 +6,20 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.gigshield</groupId>
-        <artifactId>gigshield-services</artifactId>
+        <groupId>com.parametrix</groupId>
+        <artifactId>parametrix-services</artifactId>
         <version>1.0.0</version>
     </parent>
 
     <artifactId>admin-simulator</artifactId>
-    <name>GigShield Admin Simulator Service</name>
+    <name>Parametrix Admin Simulator Service</name>
     <description>Weather hazard simulation service for demonstrations</description>
 
     <dependencies>
         <!-- Common Module -->
         <dependency>
-            <groupId>com.gigshield</groupId>
-            <artifactId>gigshield-common</artifactId>
+            <groupId>com.parametrix</groupId>
+            <artifactId>parametrix-common</artifactId>
             <version>1.0.0</version>
         </dependency>
 

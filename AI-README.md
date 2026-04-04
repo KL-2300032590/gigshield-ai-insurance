@@ -1,11 +1,11 @@
-# GigShield AI Insurance - AI Context Documentation
+# Parametrix AI Insurance - AI Context Documentation
 
 > This document is designed for AI models (like Claude, GPT) working on this codebase.
 > It provides essential context, architecture details, and conventions.
 
 ## 📋 Project Overview
 
-**GigShield AI Insurance** is a microservices-based parametric insurance platform for gig workers in India. It provides automatic claim processing based on environmental triggers (weather, air quality) without manual claim filing.
+**Parametrix AI Insurance** is a microservices-based parametric insurance platform for gig workers in India. It provides automatic claim processing based on environmental triggers (weather, air quality) without manual claim filing.
 
 ### Key Business Logic
 

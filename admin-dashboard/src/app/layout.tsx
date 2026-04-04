@@ -5,8 +5,8 @@ import "./globals.css";
 import { Sidebar } from "@/components/Sidebar";
 
 export const metadata: Metadata = {
-  title: "GigShield Admin Dashboard",
-  description: "Admin dashboard for GigShield AI Insurance microservices",
+  title: "Parametrix Admin Dashboard",
+  description: "Admin dashboard for Parametrix AI Insurance microservices",
 };
 
 export default function RootLayout({

@@ -66,7 +66,7 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-6">
             <Shield className="w-10 h-10 text-white" />
-            <span className="text-2xl font-bold text-white">GigShield</span>
+            <span className="text-2xl font-bold text-white">Parametrix</span>
           </Link>
           <h1 className="text-2xl font-bold text-white">Welcome Back</h1>
           <p className="text-white/70 mt-2">Sign in to access your dashboard</p>

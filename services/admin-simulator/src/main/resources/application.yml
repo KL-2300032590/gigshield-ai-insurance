@@ -5,7 +5,7 @@ spring:
   # MongoDB Configuration
   data:
     mongodb:
-      uri: ${SPRING_DATA_MONGODB_URI:mongodb://gigshield:gigshield123@localhost:27017/gigshield?authSource=admin}
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://parametrix:parametrix123@localhost:27017/parametrix?authSource=admin}
 
   # Kafka Configuration
   kafka:
@@ -16,7 +16,7 @@ spring:
       properties:
         spring.json.add.type.headers: false
         spring.json.type.mapping: >
-          environment.disruption:com.gigshield.common.events.EnvironmentDisruptionEvent
+          environment.disruption:com.parametrix.common.events.EnvironmentDisruptionEvent
 
 # Server Configuration
 server:
@@ -25,7 +25,7 @@ server:
 # Logging
 logging:
   level:
-    com.gigshield.simulator: DEBUG
+    com.parametrix.simulator: DEBUG
     org.springframework.kafka: INFO
     org.mongodb.driver: WARN
   pattern:

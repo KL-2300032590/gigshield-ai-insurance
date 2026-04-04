@@ -4,13 +4,13 @@ services:
   # MongoDB - Primary Database
   mongodb:
     image: mongo:7.0
-    container_name: gigshield-mongodb
+    container_name: parametrix-mongodb
     ports:
       - "27017:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: gigshield
-      MONGO_INITDB_ROOT_PASSWORD: gigshield123
-      MONGO_INITDB_DATABASE: gigshield
+      MONGO_INITDB_ROOT_USERNAME: parametrix
+      MONGO_INITDB_ROOT_PASSWORD: parametrix123
+      MONGO_INITDB_DATABASE: parametrix
     volumes:
       - mongodb_data:/data/db
     healthcheck:
@@ -19,12 +19,12 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - gigshield-network
+      - parametrix-network
 
   # Redis - Caching Layer
   redis:
     image: redis:7.2-alpine
-    container_name: gigshield-redis
+    container_name: parametrix-redis
     ports:
       - "6379:6379"
     command: redis-server --appendonly yes
@@ -36,12 +36,12 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - gigshield-network
+      - parametrix-network
 
   # Zookeeper - Kafka Dependency
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
-    container_name: gigshield-zookeeper
+    container_name: parametrix-zookeeper
     ports:
       - "2181:2181"
     environment:
@@ -56,12 +56,12 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - gigshield-network
+      - parametrix-network
 
   # Kafka - Event Streaming
   kafka:
     image: confluentinc/cp-kafka:7.5.0
-    container_name: gigshield-kafka
+    container_name: parametrix-kafka
     depends_on:
       zookeeper:
         condition: service_healthy
@@ -84,23 +84,23 @@ services:
       timeout: 10s
       retries: 5
     networks:
-      - gigshield-network
+      - parametrix-network
 
   # Kafka UI - Management Interface
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
-    container_name: gigshield-kafka-ui
+    container_name: parametrix-kafka-ui
     depends_on:
       kafka:
         condition: service_healthy
     ports:
       - "8090:8080"
     environment:
-      KAFKA_CLUSTERS_0_NAME: gigshield
+      KAFKA_CLUSTERS_0_NAME: parametrix
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
       KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
     networks:
-      - gigshield-network
+      - parametrix-network
 
   # API Gateway Service
   api-gateway:
@@ -108,14 +108,14 @@ services:
       context: ./services
       dockerfile: api-gateway/Dockerfile
     platform: linux/arm64  # Explicit platform for multi-arch support
-    container_name: gigshield-api-gateway
+    container_name: parametrix-api-gateway
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATA_MONGODB_URI: mongodb://gigshield:gigshield123@mongodb:27017/gigshield?authSource=admin
+      SPRING_DATA_MONGODB_URI: mongodb://parametrix:parametrix123@mongodb:27017/parametrix?authSource=admin
       SPRING_DATA_REDIS_HOST: redis
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-      JWT_SECRET: gigshield-jwt-secret-key-for-development-only-change-in-production
+      JWT_SECRET: parametrix-jwt-secret-key-for-development-only-change-in-production
     depends_on:
       mongodb:
         condition: service_healthy
@@ -129,7 +129,7 @@ services:
       timeout: 10s
       retries: 5
     networks:
-      - gigshield-network
+      - parametrix-network
 
   # Risk Engine Service
   risk-engine:
@@ -137,11 +137,11 @@ services:
       context: ./services
       dockerfile: risk-engine/Dockerfile
     platform: linux/arm64  # Explicit platform for multi-arch support
-    container_name: gigshield-risk-engine
+    container_name: parametrix-risk-engine
     ports:
       - "8081:8081"
     environment:
-      SPRING_DATA_MONGODB_URI: mongodb://gigshield:gigshield123@mongodb:27017/gigshield?authSource=admin
+      SPRING_DATA_MONGODB_URI: mongodb://parametrix:parametrix123@mongodb:27017/parametrix?authSource=admin
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       SERVER_PORT: 8081
     depends_on:
@@ -150,7 +150,7 @@ services:
       kafka:
         condition: service_healthy
     networks:
-      - gigshield-network
+      - parametrix-network
 
   # Trigger Engine Service
   trigger-engine:
@@ -158,11 +158,11 @@ services:
       context: ./services
       dockerfile: trigger-engine/Dockerfile
     platform: linux/arm64  # Explicit platform for multi-arch support
-    container_name: gigshield-trigger-engine
+    container_name: parametrix-trigger-engine
     ports:
       - "8082:8082"
     environment:
-      SPRING_DATA_MONGODB_URI: mongodb://gigshield:gigshield123@mongodb:27017/gigshield?authSource=admin
+      SPRING_DATA_MONGODB_URI: mongodb://parametrix:parametrix123@mongodb:27017/parametrix?authSource=admin
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       SERVER_PORT: 8082
       WEATHER_API_KEY: ${WEATHER_API_KEY:-demo}
@@ -173,7 +173,7 @@ services:
       kafka:
         condition: service_healthy
     networks:
-      - gigshield-network
+      - parametrix-network
 
   # Fraud Detection Service
   fraud-detection:
@@ -181,11 +181,11 @@ services:
       context: ./services
       dockerfile: fraud-detection/Dockerfile
     platform: linux/arm64  # Explicit platform for multi-arch support
-    container_name: gigshield-fraud-detection
+    container_name: parametrix-fraud-detection
     ports:
       - "8083:8083"
     environment:
-      SPRING_DATA_MONGODB_URI: mongodb://gigshield:gigshield123@mongodb:27017/gigshield?authSource=admin
+      SPRING_DATA_MONGODB_URI: mongodb://parametrix:parametrix123@mongodb:27017/parametrix?authSource=admin
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       SERVER_PORT: 8083
       FRAUD_LOCATION_RADIUS_KM: 50
@@ -195,7 +195,7 @@ services:
       kafka:
         condition: service_healthy
     networks:
-      - gigshield-network
+      - parametrix-network
 
   # Claim Service
   claim-service:
@@ -203,11 +203,11 @@ services:
       context: ./services
       dockerfile: claim-service/Dockerfile
     platform: linux/arm64  # Explicit platform for multi-arch support
-    container_name: gigshield-claim-service
+    container_name: parametrix-claim-service
     ports:
       - "8084:8084"
     environment:
-      SPRING_DATA_MONGODB_URI: mongodb://gigshield:gigshield123@mongodb:27017/gigshield?authSource=admin
+      SPRING_DATA_MONGODB_URI: mongodb://parametrix:parametrix123@mongodb:27017/parametrix?authSource=admin
       SPRING_DATA_REDIS_HOST: redis
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       SERVER_PORT: 8084
@@ -220,7 +220,7 @@ services:
       kafka:
         condition: service_healthy
     networks:
-      - gigshield-network
+      - parametrix-network
 
   # Payout Service
   payout-service:
@@ -228,11 +228,11 @@ services:
       context: ./services
       dockerfile: payout-service/Dockerfile
     platform: linux/arm64  # Explicit platform for multi-arch support
-    container_name: gigshield-payout-service
+    container_name: parametrix-payout-service
     ports:
       - "8085:8085"
     environment:
-      SPRING_DATA_MONGODB_URI: mongodb://gigshield:gigshield123@mongodb:27017/gigshield?authSource=admin
+      SPRING_DATA_MONGODB_URI: mongodb://parametrix:parametrix123@mongodb:27017/parametrix?authSource=admin
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       SERVER_PORT: 8085
       RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-rzp_test_demo}
@@ -244,7 +244,7 @@ services:
       kafka:
         condition: service_healthy
     networks:
-      - gigshield-network
+      - parametrix-network
 
   # Admin Simulator Service
   admin-simulator:
@@ -252,11 +252,11 @@ services:
       context: ./services
       dockerfile: admin-simulator/Dockerfile
     platform: linux/arm64  # Explicit platform for multi-arch support
-    container_name: gigshield-admin-simulator
+    container_name: parametrix-admin-simulator
     ports:
       - "8091:8091"
     environment:
-      SPRING_DATA_MONGODB_URI: mongodb://gigshield:gigshield123@mongodb:27017/gigshield?authSource=admin
+      SPRING_DATA_MONGODB_URI: mongodb://parametrix:parametrix123@mongodb:27017/parametrix?authSource=admin
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       SERVER_PORT: 8091
       API_GATEWAY_URL: http://api-gateway:8080
@@ -272,7 +272,7 @@ services:
       kafka:
         condition: service_healthy
     networks:
-      - gigshield-network
+      - parametrix-network
 
   # Frontend
   frontend:
@@ -280,7 +280,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     platform: linux/arm64  # Explicit platform for multi-arch support
-    container_name: gigshield-frontend
+    container_name: parametrix-frontend
     ports:
       - "3000:3000"
     environment:
@@ -288,7 +288,7 @@ services:
     depends_on:
       - api-gateway
     networks:
-      - gigshield-network
+      - parametrix-network
 
   # Admin Dashboard
   admin-dashboard:
@@ -296,7 +296,7 @@ services:
       context: ./admin-dashboard
       dockerfile: Dockerfile
     platform: linux/arm64
-    container_name: gigshield-admin-dashboard
+    container_name: parametrix-admin-dashboard
     ports:
       - "3001:3000"
     environment:
@@ -305,7 +305,7 @@ services:
     depends_on:
       - admin-simulator
     networks:
-      - gigshield-network
+      - parametrix-network
 
 volumes:
   mongodb_data:
@@ -315,5 +315,5 @@ volumes:
   kafka_data:
 
 networks:
-  gigshield-network:
+  parametrix-network:
     driver: bridge

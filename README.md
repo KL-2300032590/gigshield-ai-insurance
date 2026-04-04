@@ -1,4 +1,4 @@
-# GigShield – AI Powered Parametric Insurance for Gig Workers
+# Parametrix – AI Powered Parametric Insurance for Gig Workers
 
 AI-powered parametric insurance platform that protects gig delivery workers from income loss caused by external disruptions such as extreme weather and environmental conditions.
 
@@ -112,7 +112,7 @@ These disruptions reduce deliveries and can significantly impact their weekly ea
 
 Currently, gig workers **do not have automated income protection systems** that compensate them for such disruptions.
 
-GigShield proposes an **AI-powered parametric insurance platform** that detects disruptions automatically and triggers payouts to affected workers.
+Parametrix proposes an **AI-powered parametric insurance platform** that detects disruptions automatically and triggers payouts to affected workers.
 
 ---
 
@@ -133,7 +133,7 @@ Traditional insurance systems are not suitable because they require **manual cla
 
 # Proposed Solution
 
-GigShield introduces a **parametric insurance system** designed specifically for gig workers.
+Parametrix introduces a **parametric insurance system** designed specifically for gig workers.
 
 Instead of filing claims manually, the platform:
 
@@ -354,13 +354,13 @@ NEXT_PUBLIC_SIMULATOR_URL=http://localhost:8091
 
 | Topic | Publisher | Consumers |
 |-------|-----------|-----------|
-| `gigshield.worker.registered` | API Gateway | Risk Engine |
-| `gigshield.policy.purchased` | API Gateway | Risk Engine, Claim Service |
-| `gigshield.environment.disruption` | Trigger Engine | Fraud Detection, Claim Service |
-| `gigshield.claim.initiated` | Claim Service | Fraud Detection |
-| `gigshield.claim.validated` | Fraud Detection | Claim Service |
-| `gigshield.claim.approved` | Claim Service | Payout Service |
-| `gigshield.payout.completed` | Payout Service | API Gateway |
+| `parametrix.worker.registered` | API Gateway | Risk Engine |
+| `parametrix.policy.purchased` | API Gateway | Risk Engine, Claim Service |
+| `parametrix.environment.disruption` | Trigger Engine | Fraud Detection, Claim Service |
+| `parametrix.claim.initiated` | Claim Service | Fraud Detection |
+| `parametrix.claim.validated` | Fraud Detection | Claim Service |
+| `parametrix.claim.approved` | Claim Service | Payout Service |
+| `parametrix.payout.completed` | Payout Service | API Gateway |
 
 ---
 
@@ -379,7 +379,7 @@ Fraud detection, automated claims, instant payout simulation, analytics dashboar
 
 # Expected Impact
 
-GigShield provides gig workers with a **financial safety net during environmental disruptions**.
+Parametrix provides gig workers with a **financial safety net during environmental disruptions**.
 
 By combining **AI risk modeling, real-time event processing, and automated parametric insurance**, the platform enables scalable protection for India's rapidly growing gig economy.
 
@@ -388,7 +388,7 @@ By combining **AI risk modeling, real-time event processing, and automated param
 ## 📁 Project Structure
 
 ```
-gigshield-ai-insurance/
+parametrix/
 ├── services/
 │   ├── common/              # Shared models, DTOs, events
 │   ├── api-gateway/         # REST API & Authentication
@@ -416,7 +416,7 @@ gigshield-ai-insurance/
 
 **Backend Services:**
 ```
-MONGODB_URI=mongodb://localhost:27017/gigshield
+MONGODB_URI=mongodb://localhost:27017/parametrix
 KAFKA_BOOTSTRAP_SERVERS=localhost:9092
 REDIS_HOST=localhost
 JWT_SECRET=your-secret-key

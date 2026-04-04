@@ -67,7 +67,7 @@ export function Sidebar() {
         <div className="flex items-center gap-2">
           <span className="text-2xl">🛡️</span>
           <div>
-            <h1 className="font-bold text-lg">GigShield</h1>
+            <h1 className="font-bold text-lg">Parametrix</h1>
             <p className="text-xs text-zinc-400">Admin Dashboard</p>
           </div>
         </div>

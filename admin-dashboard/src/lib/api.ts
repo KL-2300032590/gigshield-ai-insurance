@@ -1,5 +1,5 @@
 /**
- * API Client for GigShield Admin Dashboard
+ * API Client for Parametrix Admin Dashboard
  *
  * Centralized API client for all backend calls.
  */

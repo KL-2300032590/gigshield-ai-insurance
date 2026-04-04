@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.gigshield</groupId>
-        <artifactId>gigshield-services</artifactId>
+        <groupId>com.parametrix</groupId>
+        <artifactId>parametrix-services</artifactId>
         <version>1.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
@@ -14,14 +14,14 @@
     <artifactId>payout-service</artifactId>
     <packaging>jar</packaging>
 
-    <name>GigShield Payout Service</name>
+    <name>Parametrix Payout Service</name>
     <description>Payout Service - Payment gateway integration and payout processing</description>
 
     <dependencies>
-        <!-- GigShield Common -->
+        <!-- Parametrix Common -->
         <dependency>
-            <groupId>com.gigshield</groupId>
-            <artifactId>gigshield-common</artifactId>
+            <groupId>com.parametrix</groupId>
+            <artifactId>parametrix-common</artifactId>
         </dependency>
 
         <!-- Spring Boot Starters -->

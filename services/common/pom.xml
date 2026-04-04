@@ -5,17 +5,17 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.gigshield</groupId>
-        <artifactId>gigshield-services</artifactId>
+        <groupId>com.parametrix</groupId>
+        <artifactId>parametrix-services</artifactId>
         <version>1.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>gigshield-common</artifactId>
+    <artifactId>parametrix-common</artifactId>
     <packaging>jar</packaging>
 
-    <name>GigShield Common</name>
-    <description>Shared library for GigShield microservices - events, DTOs, models, utilities</description>
+    <name>Parametrix Common</name>
+    <description>Shared library for Parametrix microservices - events, DTOs, models, utilities</description>
 
     <dependencies>
         <!-- Spring Data MongoDB (for document annotations) -->

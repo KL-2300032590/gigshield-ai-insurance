@@ -82,7 +82,7 @@ export default function Home() {
             </h1>
             
             <p className="text-lg sm:text-xl text-white/80 max-w-2xl mx-auto mb-10">
-              GigShield provides automated parametric insurance for delivery workers. 
+              Parametrix provides automated parametric insurance for delivery workers. 
               Get instant payouts when environmental conditions disrupt your work.
             </p>
 
@@ -133,7 +133,7 @@ export default function Home() {
             className="text-center mb-16"
           >
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
-              How GigShield Protects You
+              How Parametrix Protects You
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
               Automated protection that works for you, so you can focus on your deliveries
@@ -220,7 +220,7 @@ export default function Home() {
             Ready to Protect Your Income?
           </h2>
           <p className="text-lg text-white/80 mb-8">
-            Join thousands of gig workers who trust GigShield for their financial safety.
+            Join thousands of gig workers who trust Parametrix for their financial safety.
           </p>
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Link href="/register" className="btn-accent inline-block text-lg px-8 py-4">
@@ -233,7 +233,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="py-8 px-4 border-t border-slate-200">
         <div className="max-w-7xl mx-auto text-center text-slate-600">
-          <p>© 2024 GigShield. AI-Powered Insurance for Gig Workers.</p>
+          <p>© 2024 Parametrix. AI-Powered Insurance for Gig Workers.</p>
         </div>
       </footer>
     </main>

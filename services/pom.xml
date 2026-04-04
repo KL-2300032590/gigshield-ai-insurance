@@ -11,13 +11,13 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.gigshield</groupId>
-    <artifactId>gigshield-services</artifactId>
+    <groupId>com.parametrix</groupId>
+    <artifactId>parametrix-services</artifactId>
     <version>1.0.0</version>
     <packaging>pom</packaging>
 
-    <name>GigShield Services</name>
-    <description>Parent POM for GigShield AI Insurance Microservices</description>
+    <name>Parametrix Services</name>
+    <description>Parent POM for Parametrix AI Insurance Microservices</description>
 
     <modules>
         <module>common</module>
@@ -37,8 +37,8 @@
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <!-- GigShield Common Version -->
-        <gigshield-common.version>1.0.0</gigshield-common.version>
+        <!-- Parametrix Common Version -->
+        <parametrix-common.version>1.0.0</parametrix-common.version>
 
         <!-- Dependency Versions -->
         <lombok.version>1.18.32</lombok.version>
@@ -54,11 +54,11 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- GigShield Common Module -->
+            <!-- Parametrix Common Module -->
             <dependency>
-                <groupId>com.gigshield</groupId>
-                <artifactId>gigshield-common</artifactId>
-                <version>${gigshield-common.version}</version>
+                <groupId>com.parametrix</groupId>
+                <artifactId>parametrix-common</artifactId>
+                <version>${parametrix-common.version}</version>
             </dependency>
 
             <!-- Lombok -->
